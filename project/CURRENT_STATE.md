@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-28
 
-Working branch: `feature/public-homepage`
+Working branch: `feature/supabase-foundation`
 
 ## Implemented
 
@@ -14,6 +14,12 @@ Working branch: `feature/public-homepage`
 - Official COA and BARMM seals, the Audit Team Leader portrait, and confirmed Cotabato City office location.
 - A completed searchable and filterable Leaflet/OpenStreetMap jurisdiction map with synchronized location cards, markers, popups, directions, reset controls, and OpenStreetMap attribution.
 - A non-indexed `/staff` holding page only, with no authentication, sign-in, dashboard, or administrative functions.
+- Supabase SSR connection utilities for browser and server contexts, with
+  Next.js 16 Proxy-based session refresh and `auth.getClaims()` validation.
+- Validated configuration for the public Supabase project URL and publishable
+  key, with ignored local values and a placeholder-only `.env.example`.
+- Read-only connectivity to the Supabase Auth endpoint is confirmed; an
+  unauthenticated request completes without creating users or data.
 - Central typed static content and reusable public-page components.
 - Site-specific metadata, accessible focus states, and reduced-motion support.
 - Shared product, architecture, design, database, security, and AI handoff documentation.
@@ -28,12 +34,18 @@ Working branch: `feature/public-homepage`
 ## Not implemented
 
 - Confirmed public phone, email, exact street address, and published media content.
-- Staff dashboard and authentication.
-- Supabase database, storage, policies, migrations, or client configuration.
+- Staff dashboard, login forms, authentication flows, and role authorization.
+- Supabase database tables, Row Level Security policies, migrations, storage
+  buckets, users, or application data access.
 - Vercel project or deployment configuration.
 - AI provider or AI feature.
 - Public uploads or other user-supplied media.
 - Analytics, search, email, monitoring, or content-management workflow.
+
+The Supabase foundation initializes clients and refreshes cookie-backed sessions
+only. It does not protect `/staff`, authorize users, or grant access to data.
+The installed Supabase JavaScript packages require Node.js 22 or newer; local
+validation currently uses Node.js 24.
 
 ## Known dependency risk
 

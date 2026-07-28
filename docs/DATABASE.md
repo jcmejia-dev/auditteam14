@@ -2,7 +2,10 @@
 
 ## Confirmed direction
 
-Supabase PostgreSQL is the planned database, Supabase Auth the planned identity provider, and Supabase Storage the planned file service. None is connected or configured in the repository today.
+Supabase PostgreSQL is the planned database, Supabase Auth the planned identity
+provider, and Supabase Storage the planned file service. The repository now has
+the public client and SSR session foundation, but no tables, policies,
+migrations, buckets, users, or application data access have been created.
 
 The website must not become a repository for confidential audit evidence, findings, working papers, personal data, or unreleased reports.
 
