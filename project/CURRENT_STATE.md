@@ -1,6 +1,6 @@
 # Current state
 
-Last reviewed: 2026-07-28
+Last reviewed: 2026-07-29
 
 Working branch: `feature/database-rls`
 
@@ -23,12 +23,19 @@ Working branch: `feature/database-rls`
 - Central typed static content and reusable public-page components.
 - Site-specific metadata, accessible focus states, and reduced-motion support.
 - Shared product, architecture, design, database, security, and AI handoff documentation.
-- A review-only Supabase schema/RLS migration, non-destructive verification
-  queries, and rollback-by-default first-admin bootstrap template.
-- The unexecuted database design uses protected actor resolution for
+- A Supabase schema/RLS migration, non-destructive verification queries, and
+  rollback-by-default first-admin bootstrap template.
+- The deployed database design uses protected actor resolution for
   authenticated and explicitly attributed transaction-local maintenance
   changes, enforces one active role per user, constrains future object keys,
   and excludes expired announcements from public reads.
+- The secure database migration was applied successfully on July 29, 2026, and
+  read-only structural verification completed successfully.
+- The `private` schema exists and is not exposed through the Data API.
+- The first explicitly authorized administrator was created and verified
+  active.
+- No jurisdiction records, media, Storage buckets, or public content were
+  seeded.
 
 ## Repository state
 
@@ -41,9 +48,8 @@ Working branch: `feature/database-rls`
 
 - Confirmed public phone, email, exact street address, and published media content.
 - Staff dashboard, login forms, authentication flows, and role authorization.
-- Execution of the proposed Supabase migration in any local or remote project.
-- Supabase Storage buckets, upload policies, users, seed content, or application
-  data access.
+- Supabase Storage buckets, upload policies, jurisdiction records, media,
+  public content, or application data access.
 - Vercel project or deployment configuration.
 - AI provider or AI feature.
 - Public uploads or other user-supplied media.
@@ -54,11 +60,10 @@ only. It does not protect `/staff`, authorize users, or grant access to data.
 The installed Supabase JavaScript packages require Node.js 22 or newer; local
 validation currently uses Node.js 24.
 
-The database and RLS files are designs only. They have not been executed and
-have not mutated the connected Supabase project. The revised SQL requires
-review and rollback-only testing in a disposable database before any remote
-application. The `private` schema must also be manually confirmed as absent
-from the Supabase Data API exposed-schema setting.
+The database migration is deployed. Read-only structural checks passed, the
+private authorization schema is not exposed through the Data API, and the
+explicitly authorized first administrator is active. No public content or
+Storage data was created during deployment.
 
 ## Known dependency risk
 
@@ -81,15 +86,16 @@ No chief officers, accountants, or other personal information is included.
 
 ## Confirmed next direction
 
-Build a responsive public institutional website and later a private, simple staff dashboard using the safety and usability requirements in `docs/`.
+Implement the staff authentication UI next, following the server-enforced
+authorization, security, and usability requirements in `docs/`.
 
 ## Proposed next steps — require task approval
 
-1. Confirm the public sitemap, official content owners, and launch content.
-2. Confirm staff roles and the draft/review/publish workflow.
-3. Approve visual foundations and accessible page wireframes.
-4. Implement the public shell and initial approved pages on a feature branch.
-5. Review the proposed schema and RLS in a disposable project before approving
-   any remote migration.
+1. Implement the staff authentication UI without exposing role-management
+   controls or administrative actions publicly.
+2. Confirm the remaining staff roles and draft/review/publish workflow.
+3. Add protected staff routes and server-side authorization tests.
+4. Keep Storage and uploads deferred until the documented dependency and
+   security gates are resolved.
 
 Update this file whenever implemented capabilities, integrations, or immediate next steps materially change.
