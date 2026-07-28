@@ -29,6 +29,14 @@ When classification is uncertain, treat information as confidential until an aut
 - Return generic public errors while preserving useful, access-controlled operational logs.
 - Record content approval and publication actions without logging secrets or confidential content.
 
+## Temporary dependency risk
+
+- Next.js `16.2.12` currently carries nested `postcss@8.4.31` and `sharp@0.34.5` versions with published security advisories.
+- The current site accepts only trusted, committed CSS and trusted local images. User-supplied CSS, arbitrary remote-image optimization, and public uploads are prohibited while these affected versions remain installed.
+- Before implementing media uploads, upgrade to patched dependencies or document and validate explicit mitigations. GIF, TIFF, and VIPS uploads must remain blocked while an affected Sharp version is present.
+- Never use `npm audit fix --force` or downgrade Next.js as an advisory workaround.
+- Recheck production advisories during every dependency upgrade and before production deployment.
+
 ## Authentication proposal — requires approval
 
 Use Supabase Auth with organization-approved sign-in and recovery methods. Require stronger verification for privileged roles if supported by policy. Sessions should use secure, HTTP-only cookie handling through current Next.js and Supabase guidance. Exact roles, recovery ownership, and multi-factor requirements remain decisions.
