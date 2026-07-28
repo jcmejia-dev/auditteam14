@@ -29,6 +29,41 @@ When classification is uncertain, treat information as confidential until an aut
 - Return generic public errors while preserving useful, access-controlled operational logs.
 - Record content approval and publication actions without logging secrets or confidential content.
 
+## Database authorization
+
+- Application roles are stored only in the protected, unexposed
+  `private.user_roles` table. Never use `raw_user_meta_data`, profiles, browser
+  state, or other user-editable fields for authorization.
+- New Auth users receive no role automatically. Authenticated clients cannot
+  enumerate, insert, update, or delete role assignments. Role history is
+  retained, but a partial unique index permits only one active role per user.
+- RLS policies explicitly target `anon` or `authenticated`, use cached
+  `auth.uid()` and role-helper calls, and require both `USING` and `WITH CHECK`
+  for updates.
+- Security-definer functions must remain narrowly scoped, use an empty
+  `search_path`, fully qualify referenced objects, and revoke unnecessary
+  execution.
+- Editors can create and edit drafts only. They cannot publish, archive, delete,
+  edit published rows, assign roles, or view audit logs.
+- Audit events are trigger-created and append-only. Store event metadata, not
+  full old/new content records. Audit attribution and content
+  `created_by`/`updated_by` fields must use the same protected actor resolver;
+  never infer the current actor from ownership or assignment fields on a row.
+- Authenticated mutations resolve their actor from `auth.uid()`. Approved
+  direct-SQL maintenance must begin a transaction and call
+  `private.set_maintenance_actor(<verified-auth-user-uuid>)` before mutation.
+  The setter validates `auth.users`, stores the value transaction-locally, and
+  is not executable by client roles. Missing or invalid attribution aborts the
+  mutation.
+- Public announcement access excludes expired published rows. Staff may retain
+  access for review and records-management work.
+- Future Storage object keys must remain relative and restricted to the
+  documented conservative character set. Schemes, colons, backslashes, empty
+  path segments, double slashes, and traversal segments are prohibited.
+- The first administrator is assigned only through the manually reviewed,
+  rollback-by-default bootstrap template. Never promote the first registered
+  user automatically.
+
 ## Temporary dependency risk
 
 - Next.js `16.2.12` currently carries nested `postcss@8.4.31` and `sharp@0.34.5` versions with published security advisories.
@@ -36,6 +71,10 @@ When classification is uncertain, treat information as confidential until an aut
 - Before implementing media uploads, upgrade to patched dependencies or document and validate explicit mitigations. GIF, TIFF, and VIPS uploads must remain blocked while an affected Sharp version is present.
 - Never use `npm audit fix --force` or downgrade Next.js as an advisory workaround.
 - Recheck production advisories during every dependency upgrade and before production deployment.
+
+Storage buckets and upload policies remain prohibited until the Sharp risk is
+resolved or explicit mitigations are approved. The database migration must not
+create Storage buckets.
 
 ## Authentication proposal — requires approval
 

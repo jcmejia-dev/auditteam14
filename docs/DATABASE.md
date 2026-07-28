@@ -1,54 +1,183 @@
 # Database
 
-## Confirmed direction
+## Status
 
-Supabase PostgreSQL is the planned database, Supabase Auth the planned identity
-provider, and Supabase Storage the planned file service. The repository now has
-the public client and SSR session foundation, but no tables, policies,
-migrations, buckets, users, or application data access have been created.
+Supabase PostgreSQL, Auth, and Storage remain the selected service direction.
+The repository now contains a review-only schema and Row Level Security
+migration. It has not been executed against a local or remote Supabase project.
+No tables, roles, users, policies, records, or buckets currently exist because
+of these files.
 
-The website must not become a repository for confidential audit evidence, findings, working papers, personal data, or unreleased reports.
+The database must never store confidential audit evidence, findings, working
+papers, unnecessary personal data, or unreleased reports.
 
-## Proposed data model — requires approval
+## Designed schemas and types
 
-| Entity | Purpose | Important constraints |
+- `private.app_role`: `admin`, `editor`, or `viewer`.
+- `public.publication_status`: `draft`, `published`, or `archived`.
+- `private`: unexposed authorization functions and the protected role ledger.
+- `public`: API-facing profiles, website content, and audit-event metadata.
+
+The `private` schema is not an API schema. Client roles receive no table access
+to `private.user_roles`. Row Level Security helpers may reference it without
+exposing the table through PostgREST.
+
+## Table purposes and relationships
+
+| Table | Purpose | Important relationships and constraints |
 | --- | --- | --- |
-| `profiles` | Minimal staff profile linked to an authenticated user | Avoid unnecessary personal data |
-| `roles` / `profile_roles` | Role assignment | Server-enforced authorization |
-| `content_items` | Pages, announcements, and approved publication metadata | Status and visibility required |
-| `content_revisions` | Reviewable version history | Immutable author and timestamp |
-| `media_assets` | Metadata for approved website media | Classification and accessibility metadata |
-| `review_actions` | Submission, approval, rejection, and publication decisions | Append-only history |
-| `activity_log` | Security-relevant administrative events | Restricted access and retention policy |
+| `private.user_roles` | Active and historical staff role assignments | References `auth.users`; at most one active role of any kind per user; inactive history is retained; no client table policies or privileges |
+| `public.profiles` | Minimal staff-controlled display name and job title | One-to-one with `auth.users`; contains no role or authorization field |
+| `public.site_settings` | Public-safe website settings and approved values | Only rows marked public and published are visible publicly; secrets are prohibited |
+| `public.team_members` | Approved public leadership/team entries | Publication state, slug, ordering, and optional local asset path |
+| `public.announcements` | Public announcements | Publication state, slug, optional expiry, and featured ordering; expired rows remain staff-visible but are excluded publicly |
+| `public.activities` | Approved activity information | Publication state, activity date, general location, and ordering |
+| `public.jurisdictions` | Confirmed audit-jurisdiction locations | Publication state and constrained coordinates; no legacy data is seeded |
+| `public.albums` | Grouping metadata for approved media | Parent of optional `media_items` records |
+| `public.media_items` | Image/video metadata for future approved assets | Optional album relationship; publication requires a constrained relative object key, but no bucket exists |
+| `public.public_documents` | Metadata for approved public documents | Publication requires a constrained relative object key, but no bucket exists |
+| `public.audit_logs` | Append-only mutation event metadata | Records actor, operation, table, entity UUID, and time without copying row contents |
 
-This is a planning model, not an instruction to create tables. Separate specialized tables may be preferable after the sitemap and editorial workflow are approved.
+Content tables use UUID primary keys, timestamps, publication state,
+`published_at`, display ordering, and `created_by`/`updated_by` where
+appropriate. Public/client SELECT privileges intentionally omit actor UUID
+columns; administrative attribution is available through protected audit logs.
 
-## Proposed content rules
+## Authorization design
 
-- Every content item has an owner, status, intended audience, and timestamps.
-- Public queries return only explicitly published public content.
-- Draft, review, and archived records are unavailable to anonymous users.
-- AI-assisted content records its draft origin and still requires human approval.
-- Deletes should normally be recoverable or archival; retention requirements must be confirmed.
+Authorization comes from active rows in `private.user_roles`. It does not come
+from `profiles`, `raw_user_meta_data`, browser state, or a user-editable JWT
+claim. New Auth users receive a safe profile automatically and no application
+role. A partial unique index on `user_id` permits role history while enforcing
+at most one active `admin`, `editor`, or `viewer` assignment for each user.
 
-## Authorization requirements
+`private.has_role(...)` and `private.is_staff()` are narrowly scoped
+security-definer helpers. They use an explicit empty `search_path`, fully
+qualified object names, revoked default execution, and cached calls inside RLS
+policies.
 
-- Enable Row Level Security on every application table exposed through Supabase APIs.
-- Deny access by default, then grant the minimum required operation.
-- Do not treat a role stored only in browser state as authoritative.
-- Service-role access is server-only and reserved for operations that truly require it.
-- Test policies for anonymous, ordinary staff, reviewers, publishers, and administrators before launch.
+### Access matrix
 
-## Storage proposal — requires approval
+| Actor | Public published content | Draft/archived content | Create | Update | Publish/archive | Delete | Roles | Audit logs |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `anon` | Read non-expired published rows | No | No | No | No | No | No | No |
+| Authenticated, no active role | Read non-expired published rows | No | No | Own safe profile only | No | No | No | No |
+| `viewer` | Read | Read | No | Own safe profile only | No | No | No | No |
+| `editor` | Read | Read | Drafts only | Drafts only; never published rows | No | No | No | No |
+| `admin` | Read | Read | All content states | All content states | Yes | Yes | Protected workflow later; never direct client table access | Read |
 
-Use separate public and private buckets or equivalent controls. A public bucket may contain only approved public website assets. Private storage must use authenticated access and short-lived signed URLs where appropriate.
+Every policy targets `anon` or `authenticated` explicitly. INSERT policies use
+`WITH CHECK`; UPDATE policies use both `USING` and `WITH CHECK`; DELETE exists
+only for administrators. Role and `auth.uid()` checks use statement-cached
+`select` wrappers, with indexes on policy predicates.
 
-Do not upload audit evidence, working papers, findings, personal data, or unreleased reports. Validate file type, size, ownership, and publication state on the server.
+## Profiles
 
-## Migration and operations proposal
+The Auth-user trigger creates `public.profiles` with the neutral display name
+`Staff member`. It deliberately does not copy `raw_user_meta_data` and does not
+assign a role. Authenticated users can read only their own profile and update
+only `display_name` and `job_title`.
 
-- Keep schema and policy changes in reviewed migrations.
-- Test migrations in a non-production environment first.
-- Define backup, restore, retention, and audit-log ownership before production.
-- Seed only synthetic or explicitly approved public sample data.
-- Never copy production personal or confidential data into development or AI tools.
+Roles are kept outside profiles because profile fields and Auth user metadata
+are client-editable. Using either for authorization would let users influence
+their own privileges.
+
+## Audit and timestamp integrity
+
+Protected triggers set `created_by`, `updated_by`, `created_at`, `updated_at`,
+and publication timestamps for content mutations. They preserve immutable IDs
+and creation metadata during updates.
+
+`private.resolve_actor_id()` is the only source of mutation attribution:
+
+- authenticated application requests resolve to `auth.uid()`;
+- approved direct SQL resolves to an explicitly configured, existing Auth user;
+- row fields such as `created_by`, `updated_by`, `assigned_by`, and `revoked_by`
+  are never treated as the current actor;
+- the mutation is rejected when neither valid source is available.
+
+The content attribution trigger and audit trigger call the same resolver.
+`private.set_maintenance_actor(uuid)` and the resolver are security-definer
+functions with an empty `search_path` and no client execution privilege.
+
+Audit triggers append an event containing only:
+
+- actor Auth UUID;
+- `INSERT`, `UPDATE`, or `DELETE`;
+- schema/table name;
+- entity UUID;
+- event timestamp.
+
+They do not store complete old/new rows. Client roles cannot insert, update, or
+delete audit events; only admins can read them.
+
+### Safe direct-SQL maintenance
+
+Use direct SQL only in an approved maintenance window and only for a reviewed
+operation. The safe sequence is:
+
+```sql
+begin;
+select private.set_maintenance_actor(
+  '<explicitly-verified-existing-auth-user-uuid>'::uuid
+);
+-- Perform the reviewed mutation.
+-- Inspect the affected row and audit event.
+rollback; -- Change to COMMIT only after explicit approval.
+```
+
+The setter verifies the UUID in `auth.users` and uses transaction-local
+`set_config(..., true)`. It must be called after `BEGIN`; the value disappears
+at transaction end. Execute it only through an approved direct-SQL role; never
+grant it to `anon` or `authenticated`. Do not set the custom configuration
+value directly, reuse an old row's attribution fields, or perform audited
+maintenance without this transaction wrapper.
+
+## First-admin bootstrap
+
+`supabase/manual/assign-first-admin.sql` is a manual, rollback-by-default
+template:
+
+1. Confirm the target person is authorized.
+2. Replace the all-zero placeholder with that exact existing Auth user UUID.
+3. Review the file and run it only in an approved maintenance window. It
+   validates the user, establishes that UUID as the transaction-local
+   maintenance actor, and only then inserts the role.
+4. Inspect the verification query.
+5. Change the final `ROLLBACK` to `COMMIT` only after explicit approval.
+
+The migration never promotes the first registered user. Later role management
+requires a separate protected server workflow that rechecks the caller's admin
+role and is reviewed independently.
+
+## Jurisdiction and Storage gates
+
+The six jurisdiction entries inherited from the legacy website are not seeded.
+Their names, categories, locations, coordinates, and inclusion must be
+stakeholder-confirmed before insertion or publication.
+
+Storage remains deferred. The migration creates media/document metadata tables
+but no buckets or Storage policies. `media_items.storage_path` and
+`public_documents.file_path` accept only relative object keys of 1–500
+characters using letters, numbers, dot, underscore, hyphen, and forward slash.
+Leading slashes, schemes and colons, backslashes, empty segments, double
+slashes, and `.` or `..` segments are rejected.
+
+`team_members.photo_path` remains a separate trusted local-public-asset path.
+It requires a leading slash, permits only the limited characters needed by
+approved committed assets, and rejects traversal, colons, backslashes, and
+double slashes.
+
+Uploads remain prohibited until the Sharp dependency is patched or explicit
+mitigations are validated, and file classification, scanning, limits,
+ownership, and publication review are approved.
+
+## Required review before execution
+
+- Apply and test only in a disposable non-production Supabase project first.
+- Run `supabase/tests/rls-verification.sql` and the documented role cases.
+- Confirm the project exposes `public` but not `private`.
+- Confirm all expected tables have RLS and all grants match the matrix.
+- Exercise each role with synthetic users and rollback-only fixtures.
+- Review backup, rollback, retention, records-management, and incident owners.
+- Obtain explicit approval before any remote migration.
