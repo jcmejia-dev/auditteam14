@@ -4,10 +4,13 @@
 
 - Next.js 16 App Router with React and TypeScript.
 - Tailwind CSS 4 for styling.
-- A single starter route currently exists under `app/`.
-- Supabase is the planned provider for authentication, PostgreSQL, and file storage.
+- A public homepage and a non-indexed `/staff` holding route exist under `app/`.
+- Supabase SSR browser/server clients and session refresh are configured with
+  the public project URL and publishable key.
+- Supabase remains the planned provider for authentication, PostgreSQL, and
+  file storage.
 - Vercel is the planned hosting platform.
-- No external service is connected yet.
+- No login flow, authorization, database access, or storage integration exists.
 
 The system must support a public institutional website and a private staff dashboard while keeping confidential audit material outside the product.
 
