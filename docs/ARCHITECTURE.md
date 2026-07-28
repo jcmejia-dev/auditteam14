@@ -4,13 +4,17 @@
 
 - Next.js 16 App Router with React and TypeScript.
 - Tailwind CSS 4 for styling.
-- A public homepage and a non-indexed `/staff` holding route exist under `app/`.
+- A public homepage and non-indexed staff login, access-denied, and protected
+  dashboard routes exist under `app/`.
 - Supabase SSR browser/server clients and session refresh are configured with
   the public project URL and publishable key.
-- Supabase remains the planned provider for authentication, PostgreSQL, and
-  file storage.
+- Supabase Auth and PostgreSQL provide the deployed authentication and
+  authorization foundation. Storage remains deferred.
 - Vercel is the planned hosting platform.
-- No login flow, authorization, database access, or storage integration exists.
+- Staff routes validate signed identity with `auth.getClaims()` and active
+  application role through a caller-only database function. The follow-up
+  function migration remains review-only until separately applied.
+- No content CRUD, uploads, Storage integration, or publishing workflow exists.
 
 The system must support a public institutional website and a private staff dashboard while keeping confidential audit material outside the product.
 
@@ -32,11 +36,12 @@ Approved public content only ──> optional future AI service
 ### Application boundaries
 
 - `app/(public)`: public pages and approved published content.
-- `app/(staff)`: authenticated dashboard pages.
+- `app/staff`: authenticated and database-authorized staff pages.
 - Server-side modules: authorization, validation, publishing, and external-service access.
 - Shared UI: accessible primitives and design tokens used by both areas.
 
-These route groups are proposed conventions, not current repository structure.
+The public route group remains a proposed organization; current public pages
+remain at the application root.
 
 ### Content lifecycle
 

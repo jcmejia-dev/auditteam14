@@ -76,9 +76,25 @@ Storage buckets and upload policies remain prohibited until the Sharp risk is
 resolved or explicit mitigations are approved. The database migration must not
 create Storage buckets.
 
-## Authentication proposal — requires approval
+## Staff authentication
 
-Use Supabase Auth with organization-approved sign-in and recovery methods. Require stronger verification for privileged roles if supported by policy. Sessions should use secure, HTTP-only cookie handling through current Next.js and Supabase guidance. Exact roles, recovery ownership, and multi-factor requirements remain decisions.
+- Staff email/password authentication uses the Supabase SSR server client and a
+  server action. Passwords, email addresses, tokens, and complete provider
+  errors must never be logged.
+- Every staff request validates signed identity with `auth.getClaims()` and
+  verifies the active database role through the no-argument
+  `public.get_my_role()` helper. Proxy refreshes sessions but is not an
+  authorization boundary.
+- The role helper derives identity only from `auth.uid()`. Browser input, URL
+  values, cookies, profiles, and user metadata are never accepted as role
+  authority.
+- Login failures remain generic. Authenticated users without an active role are
+  denied and can sign out through a POST-based server action.
+- Staff routes are dynamic, non-indexed, and served with private/no-store
+  behavior. Redirect destinations are fixed application paths.
+- Signup, password reset, role management, content mutations, and uploads
+  remain disabled. Recovery ownership, multi-factor requirements, and
+  production login-rate-limit settings still require operational approval.
 
 ## Secrets and environments
 

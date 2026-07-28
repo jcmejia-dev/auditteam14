@@ -3,10 +3,14 @@
 ## Status
 
 Supabase PostgreSQL, Auth, and Storage remain the selected service direction.
-The repository now contains a review-only schema and Row Level Security
-migration. It has not been executed against a local or remote Supabase project.
-No tables, roles, users, policies, records, or buckets currently exist because
-of these files.
+The secure content schema and Row Level Security migration was applied on July
+29, 2026, and read-only structural verification passed. The private schema is
+not exposed through the Data API, and the first explicitly authorized
+administrator is active. No jurisdiction records, media, Storage buckets, or
+public content were seeded.
+
+A follow-up review-only migration defines `public.get_my_role()`. It has not
+been executed against the remote project.
 
 The database must never store confidential audit evidence, findings, working
 papers, unnecessary personal data, or unreleased reports.
@@ -55,6 +59,14 @@ at most one active `admin`, `editor`, or `viewer` assignment for each user.
 security-definer helpers. They use an explicit empty `search_path`, fully
 qualified object names, revoked default execution, and cached calls inside RLS
 policies.
+
+### Caller-only role lookup
+
+The pending `public.get_my_role()` helper takes no arguments and returns only
+the authenticated caller's active role as text, or null when no active role is
+assigned. It reads `private.user_roles` using `auth.uid()`, uses an empty
+`search_path`, and grants execution only to `authenticated`. It does not expose
+the role ledger or accept a user identifier supplied by a client.
 
 ### Access matrix
 
@@ -172,12 +184,13 @@ Uploads remain prohibited until the Sharp dependency is patched or explicit
 mitigations are validated, and file classification, scanning, limits,
 ownership, and publication review are approved.
 
-## Required review before execution
+## Required review before the follow-up migration
 
 - Apply and test only in a disposable non-production Supabase project first.
-- Run `supabase/tests/rls-verification.sql` and the documented role cases.
+- Confirm `get_my_role()` has no arguments and returns only the caller's role.
+- Confirm `PUBLIC` and `anon` have no execution privilege.
+- Confirm only `authenticated` receives execution privilege.
 - Confirm the project exposes `public` but not `private`.
-- Confirm all expected tables have RLS and all grants match the matrix.
-- Exercise each role with synthetic users and rollback-only fixtures.
-- Review backup, rollback, retention, records-management, and incident owners.
-- Obtain explicit approval before any remote migration.
+- Exercise authorized and unassigned synthetic users without recording
+  credentials or identifiers.
+- Obtain explicit approval before applying the follow-up migration remotely.
