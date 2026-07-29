@@ -1,6 +1,6 @@
-import { AboutSection } from "@/components/public/about-section";
 import { ContactSection } from "@/components/public/contact-section";
 import { Hero } from "@/components/public/hero";
+import { InstitutionalInformationSection } from "@/components/public/institutional-information-section";
 import { JurisdictionSection } from "@/components/public/jurisdiction-section";
 import { LeadershipSection } from "@/components/public/leadership-section";
 import { LatestActivitiesSection } from "@/components/public/latest-activities-section";
@@ -27,10 +27,10 @@ export default function Home() {
         <Hero />
         <LatestAnnouncementsSection />
         <LatestActivitiesSection />
-        <AboutSection />
+        <InstitutionalInformationSection />
         <VisionMissionSection />
-        <JurisdictionSection />
         <ValuesSection />
+        <JurisdictionSection />
         <LeadershipSection />
         <MediaSection />
         <ContactSection />

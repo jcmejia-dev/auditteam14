@@ -35,7 +35,7 @@ export function Hero() {
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <a
-              href="#about"
+              href="#institutional-information"
               className="inline-flex min-h-12 items-center justify-center rounded-sm bg-gold-500 px-6 py-3 font-bold text-navy-950 transition-colors hover:bg-gold-200"
             >
               Explore Our Work
