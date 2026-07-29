@@ -33,6 +33,7 @@ const quickActions = [
     title: "Manage Jurisdiction",
     description: "Review confirmed jurisdiction information before publication.",
     icon: "map",
+    href: "/staff/jurisdictions",
   },
   {
     title: "Manage Media",
@@ -131,7 +132,9 @@ export default async function StaffDashboardPage() {
                 {...action}
                 href={
                   "href" in action &&
-                  (role !== "viewer" || action.icon === "team")
+                  (role !== "viewer" ||
+                    action.icon === "team" ||
+                    action.icon === "map")
                     ? action.href
                     : undefined
                 }
