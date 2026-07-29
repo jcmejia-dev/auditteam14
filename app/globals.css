@@ -376,6 +376,41 @@ section[id] {
   transform: rotate(-2deg);
 }
 
+.media-page-field {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.media-page-field::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      circle at 88% 12%,
+      rgba(36, 77, 147, 0.09),
+      transparent 28rem
+    ),
+    linear-gradient(125deg, transparent 56%, rgba(195, 154, 74, 0.055));
+  content: "";
+}
+
+.media-page-field::after {
+  position: absolute;
+  right: -8rem;
+  bottom: -12rem;
+  z-index: 0;
+  width: 30rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(36, 77, 147, 0.08);
+  border-radius: 9999px;
+  box-shadow:
+    0 0 0 4rem rgba(195, 154, 74, 0.025),
+    0 0 0 8rem rgba(166, 43, 53, 0.018);
+  content: "";
+}
+
 .lock-icon {
   position: relative;
   display: inline-block;

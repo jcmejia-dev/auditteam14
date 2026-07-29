@@ -14,7 +14,11 @@
 - Staff routes validate signed identity with `auth.getClaims()` and active
   application role through a caller-only database function. The follow-up
   function migration remains review-only until separately applied.
-- No content CRUD, uploads, Storage integration, or publishing workflow exists.
+- Role-aware content management exists for announcements, activities, team
+  members, jurisdictions, albums, and media metadata. A review-only private
+  Storage migration and guarded image-upload workflow exist for the media
+  gallery, but uploads remain disabled until that migration is applied and
+  verified.
 
 The system must support a public institutional website and a private staff dashboard while keeping confidential audit material outside the product.
 
@@ -53,6 +57,10 @@ A proposed lifecycle is `draft → in_review → approved → published → arch
 - Dashboard data must be fetched only after server-side identity and role checks.
 - Privileged database or storage operations must remain server-side.
 - Client components should be limited to interactions that need browser state.
+- Public gallery pages fetch only published album/image metadata through
+  anonymous RLS. Image bytes are delivered through a same-origin route that
+  resolves approved records server-side, verifies a supported file signature,
+  and does not reveal database UUIDs or Storage object keys.
 
 ### Service access
 

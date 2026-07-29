@@ -72,9 +72,45 @@ When classification is uncertain, treat information as confidential until an aut
 - Never use `npm audit fix --force` or downgrade Next.js as an advisory workaround.
 - Recheck production advisories during every dependency upgrade and before production deployment.
 
-Storage buckets and upload policies remain prohibited until the Sharp risk is
-resolved or explicit mitigations are approved. The database migration must not
-create Storage buckets.
+The media-gallery task approves a narrow mitigation design without changing
+the affected dependencies. A review-only migration may create one private
+media bucket only after database review. Until that migration is applied and
+verified, the application keeps the upload form disabled.
+
+### Media upload controls
+
+- Accept JPEG, PNG, and WebP images only, with a maximum size of 4 MB. This
+  remains below Vercel's 4.5 MB Function request-body limit.
+- Keep the Next.js Server Action request cap at 4.25 MB solely to accommodate a
+  4 MB image plus multipart form overhead; application and bucket limits remain
+  4 MB.
+- Validate declared MIME type, filename extension, size, and actual file
+  signature on the server. A matching extension or browser MIME value alone is
+  insufficient.
+- Reject GIF, TIFF, SVG, VIPS, PDF, video, executable, HTML, and unknown
+  formats.
+- Never pass an uploaded image to Sharp/libvips and never automatically resize,
+  convert, optimize, or generate derivatives.
+- Use a private bucket with server-generated UUID object keys. Reject client
+  paths, overwrite/upsert behavior, traversal, arbitrary remote URLs, and
+  cross-album paths.
+- Permit uploads only for authenticated administrators and editors. Editors
+  may upload drafts only. Only administrators may publish, archive, or
+  permanently delete media.
+- Permit anonymous object reads only when the object is linked to a published
+  image inside a published album. Do not permit anonymous object listing.
+- Serve public images through the same-origin media route without exposing
+  database UUIDs or Storage object keys. Recheck the downloaded signature and
+  send `X-Content-Type-Options: nosniff`.
+- Do not accept video files or external iframe/HTML input. External video
+  providers remain unsupported until the schema records a reviewed allowlisted
+  provider and normalized source identifier.
+- Apply Storage changes only through the reviewed migration. Never modify
+  `storage.objects` directly; object upload and deletion use the Storage API.
+- If finalization fails after upload, attempt immediate cleanup and return a
+  safe operational message. Permanent deletion first archives the database
+  record, then removes the object, clears its path, and finally deletes the
+  row so partial failure remains recoverable.
 
 ## Staff authentication
 

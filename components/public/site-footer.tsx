@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { siteContent } from "@/data/site-content";
 
 import { BrandMark } from "./brand-mark";
@@ -26,12 +28,12 @@ export function SiteFooter() {
           <ul className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 text-sm">
             {siteContent.navigation.map((item) => (
               <li key={item.href}>
-                <a
-                  href={item.href}
+                <Link
+                  href={`/${item.href}`}
                   className="rounded-sm hover:text-white hover:underline hover:underline-offset-4"
                 >
                   {item.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
