@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+
+import { getSiteUrl } from "@/lib/site-url";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -8,6 +11,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
+  metadataBase: getSiteUrl(),
   title: "Audit Team 14 | Commission on Audit – BARMM",
   description:
     "Official public website of Commission on Audit – BARMM, Audit Group C – Maguindanao, Audit Team 14.",

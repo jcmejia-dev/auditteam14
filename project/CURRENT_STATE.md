@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-29
 
-Working branch: `feature/audit-history`
+Working branch: `feature/vercel-readiness`
 
 ## Implemented
 
@@ -85,6 +85,10 @@ Working branch: `feature/audit-history`
 - Audit history remains protected by signed-claim validation, the caller-only
   active-role lookup, the admin-only page check, and the existing
   `audit_logs` RLS policy. No audit records are mutated by the interface.
+- First-preview Vercel readiness is implemented locally with validated
+  metadata URL resolution, a documented public site-origin variable, and a
+  manual deployment checklist. No Vercel project has been connected or
+  deployed.
 
 ## Repository state
 
