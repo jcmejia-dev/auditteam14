@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-29
 
-Working branch: `feature/database-rls`
+Working branch: `feature/staff-auth`
 
 ## Implemented
 
@@ -13,7 +13,9 @@ Working branch: `feature/database-rls`
 - A completed first-version public homepage with responsive institutional navigation, hero, about, vision and mission, core values, leadership, media categories, contact, and fully linked footer sections.
 - Official COA and BARMM seals, the Audit Team Leader portrait, and confirmed Cotabato City office location.
 - A completed searchable and filterable Leaflet/OpenStreetMap jurisdiction map with synchronized location cards, markers, popups, directions, reset controls, and OpenStreetMap attribution.
-- A non-indexed `/staff` holding page only, with no authentication, sign-in, dashboard, or administrative functions.
+- A non-indexed staff authentication experience with email/password sign-in,
+  caller-only role verification, an access-denied state, secure sign-out, and a
+  protected server-rendered dashboard.
 - Supabase SSR connection utilities for browser and server contexts, with
   Next.js 16 Proxy-based session refresh and `auth.getClaims()` validation.
 - Validated configuration for the public Supabase project URL and publishable
@@ -36,6 +38,9 @@ Working branch: `feature/database-rls`
   active.
 - No jurisdiction records, media, Storage buckets, or public content were
   seeded.
+- A review-only follow-up migration defines `public.get_my_role()` so an
+  authenticated caller can retrieve only their own active role. This migration
+  has not been applied remotely.
 
 ## Repository state
 
@@ -47,7 +52,8 @@ Working branch: `feature/database-rls`
 ## Not implemented
 
 - Confirmed public phone, email, exact street address, and published media content.
-- Staff dashboard, login forms, authentication flows, and role authorization.
+- Staff content management, publishing, role management, password reset, and
+  account-registration workflows.
 - Supabase Storage buckets, upload policies, jurisdiction records, media,
   public content, or application data access.
 - Vercel project or deployment configuration.
@@ -55,8 +61,10 @@ Working branch: `feature/database-rls`
 - Public uploads or other user-supplied media.
 - Analytics, search, email, monitoring, or content-management workflow.
 
-The Supabase foundation initializes clients and refreshes cookie-backed sessions
-only. It does not protect `/staff`, authorize users, or grant access to data.
+The Supabase foundation refreshes cookie-backed sessions in Proxy, while every
+staff route independently validates identity with `auth.getClaims()` and checks
+the active database role through the caller-only RPC. Proxy is not treated as
+the authorization boundary.
 The installed Supabase JavaScript packages require Node.js 22 or newer; local
 validation currently uses Node.js 24.
 
@@ -86,15 +94,18 @@ No chief officers, accountants, or other personal information is included.
 
 ## Confirmed next direction
 
-Implement the staff authentication UI next, following the server-enforced
-authorization, security, and usability requirements in `docs/`.
+Review and apply the caller-only role helper migration through the approved
+database process, then manually validate the staff authentication experience
+with an authorized test account.
 
 ## Proposed next steps — require task approval
 
-1. Implement the staff authentication UI without exposing role-management
-   controls or administrative actions publicly.
-2. Confirm the remaining staff roles and draft/review/publish workflow.
-3. Add protected staff routes and server-side authorization tests.
+1. Apply and verify `public.get_my_role()` without exposing the private role
+   ledger or other users' assignments.
+2. Manually test authorized and unassigned-user access without recording
+   credentials.
+3. Confirm the remaining draft/review/publish workflow before adding content
+   mutations.
 4. Keep Storage and uploads deferred until the documented dependency and
    security gates are resolved.
 
