@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-29
 
-Working branch: `feature/institutional-information`
+Working branch: `feature/media-gallery`
 
 ## Implemented
 
@@ -92,6 +92,27 @@ Working branch: `feature/institutional-information`
 - The public institutional overview now presents confirmed organizational and
   regional details, the current official Commission on Audit Vision, Mission,
   and seven Core Values. Unconfirmed personnel fields remain omitted.
+- A public media-gallery experience is implemented locally with published
+  photo-album previews on the homepage, dedicated `/photos` and `/videos`
+  routes, published photo-album pages, and a keyboard-operable fullscreen
+  lightbox. Public photo data excludes UUIDs, actor fields, and Storage paths.
+- Role-aware staff media management is implemented locally for album drafts,
+  publication, archiving, ordering, deletion, photo metadata, and guarded
+  image uploads. Administrators manage all states, editors manage drafts only,
+  and viewers have read-only access through the existing authorization and RLS
+  boundaries.
+- A review-only migration defines a private 4 MB media bucket restricted to
+  JPEG, PNG, and WebP with server-generated object paths and strict
+  `storage.objects` policies. It has not been executed remotely. The upload
+  form remains disabled unless a read-only readiness check confirms that the
+  bucket and staff policies are available.
+- Image uploads are validated by declared MIME type, extension, size, and file
+  signature and are never processed with Sharp. Video-file uploads, arbitrary
+  URLs, HTML, iframe code, and external video publishing remain disabled.
+- The existing album schema has no event-date field, so gallery dates are
+  labeled as publication dates. The media schema has no allowlisted external
+  video provider/source fields; this requires a separately reviewed schema
+  decision before videos can be published safely.
 
 ## Repository state
 
@@ -103,10 +124,11 @@ Working branch: `feature/institutional-information`
 ## Not implemented
 
 - Confirmed public phone, email, exact street address, and published media content.
-- Staff management for media, roles, password reset, and account-registration
+- Staff management for roles, password reset, and account-registration
   workflows.
-- Supabase Storage buckets, upload policies, jurisdiction records, media,
-  public content, or application data access.
+- Deployed Supabase Storage buckets or media object policies. The media
+  migration remains review-only, and no jurisdiction or media records were
+  seeded automatically.
 - Vercel project or deployment configuration.
 - AI provider or AI feature.
 - Public uploads or other user-supplied media.
@@ -166,7 +188,8 @@ disposable admin, editor, and viewer test accounts.
    interactions, and deletion with disposable records only.
 7. Privately verify audit-history visibility, filters, pagination, and safe
    fallback labels with an administrator account.
-8. Keep Storage and uploads deferred until the documented dependency and
-   security gates are resolved.
+8. Review the media Storage migration in a disposable project, confirm
+   operation-aware anonymous download policies and all role cases, then obtain
+   explicit approval before remote execution.
 
 Update this file whenever implemented capabilities, integrations, or immediate next steps materially change.

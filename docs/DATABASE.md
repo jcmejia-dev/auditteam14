@@ -168,8 +168,11 @@ The six jurisdiction entries inherited from the legacy website are not seeded.
 Their names, categories, locations, coordinates, and inclusion must be
 stakeholder-confirmed before insertion or publication.
 
-Storage remains deferred. The migration creates media/document metadata tables
-but no buckets or Storage policies. `media_items.storage_path` and
+The deployed foundation migration creates media/document metadata tables but
+no buckets or Storage policies. A later review-only migration,
+`20260729000200_create_secure_media_storage.sql`, defines a private media
+bucket and narrowly scoped object policies; it has not been executed remotely.
+`media_items.storage_path` and
 `public_documents.file_path` accept only relative object keys of 1–500
 characters using letters, numbers, dot, underscore, hyphen, and forward slash.
 Leading slashes, schemes and colons, backslashes, empty segments, double
@@ -180,9 +183,25 @@ It requires a leading slash, permits only the limited characters needed by
 approved committed assets, and rejects traversal, colons, backslashes, and
 double slashes.
 
-Uploads remain prohibited until the Sharp dependency is patched or explicit
-mitigations are validated, and file classification, scanning, limits,
-ownership, and publication review are approved.
+The review-only media migration limits the bucket to JPEG, PNG, and WebP at
+4 MB per object. Its object keys use a server-generated
+`<album-uuid>/<media-uuid>.<allowed-extension>` shape. Authenticated
+administrators and editors may upload only through the reviewed draft
+workflow; anonymous reads require both a published image record and published
+album. Object overwrite is not permitted, and only administrators can remove
+linked objects. Editors receive a narrow own-object cleanup policy only for an
+upload that was never linked to a media record.
+
+The application independently checks declared MIME type, extension, size, and
+JPEG/PNG/WebP signature before upload and never processes the file with Sharp.
+The upload form performs a read-only readiness check and remains disabled until
+the private bucket and policies are applied and verified.
+
+The current `albums` table has no separate event-date field. Public gallery
+dates are therefore labeled as publication dates. The current `media_items`
+table also has no allowlisted external-video provider or source field. External
+video publishing and video-file uploads remain disabled rather than using
+arbitrary URLs, HTML, or iframe code.
 
 ## Required review before the follow-up migration
 

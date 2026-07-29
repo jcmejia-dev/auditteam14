@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { siteContent } from "@/data/site-content";
 
 import { BrandMark } from "./brand-mark";
@@ -7,8 +9,8 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
     <>
       {siteContent.navigation.map((item) => (
         <li key={item.href}>
-          <a
-            href={item.href}
+          <Link
+            href={`/${item.href}`}
             className={
               mobile
                 ? "block rounded-sm px-3 py-3 text-base font-semibold text-navy-800 hover:bg-cream hover:text-navy-950"
@@ -16,7 +18,7 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
             }
           >
             {item.label}
-          </a>
+          </Link>
         </li>
       ))}
     </>
@@ -27,8 +29,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-navy-900/10 bg-white/95 shadow-[0_1px_0_rgba(16,42,67,0.04)] backdrop-blur-sm">
       <div className="page-shell flex min-h-20 items-center justify-between gap-5">
-        <a
-          href="#home"
+        <Link
+          href="/#home"
           aria-label="Audit Team 14 home"
           className="flex items-center gap-3 rounded-sm py-2"
         >
@@ -41,7 +43,7 @@ export function SiteHeader() {
               Audit Team 14
             </span>
           </span>
-        </a>
+        </Link>
 
         <nav aria-label="Primary navigation" className="hidden lg:block">
           <ul className="flex items-center gap-1">

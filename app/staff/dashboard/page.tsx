@@ -37,8 +37,9 @@ const quickActions = [
   },
   {
     title: "Manage Media",
-    description: "Organize approved photos and videos after uploads are enabled.",
+    description: "Organize approved photo albums and review media publication.",
     icon: "media",
+    href: "/staff/media",
   },
   {
     title: "Audit History",
@@ -123,6 +124,12 @@ export default async function StaffDashboardPage() {
               >
                 Manage Activities
               </Link>
+              <Link
+                href="/staff/media"
+                className="inline-flex min-h-11 items-center font-bold text-teal-700 underline decoration-gold-500 decoration-2 underline-offset-4 hover:text-navy-900"
+              >
+                Manage Media
+              </Link>
             </div>
           </div>
 
@@ -135,7 +142,8 @@ export default async function StaffDashboardPage() {
                   "href" in action &&
                   (role !== "viewer" ||
                     action.icon === "team" ||
-                    action.icon === "map") &&
+                    action.icon === "map" ||
+                    action.icon === "media") &&
                   (action.icon !== "history" || role === "admin")
                     ? action.href
                     : undefined
