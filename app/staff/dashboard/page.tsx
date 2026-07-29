@@ -25,8 +25,9 @@ const quickActions = [
   },
   {
     title: "Manage Team",
-    description: "Maintain public-facing team information in a later release.",
+    description: "Maintain approved public names, positions, and biographies.",
     icon: "team",
+    href: "/staff/team",
   },
   {
     title: "Manage Jurisdiction",
@@ -129,7 +130,8 @@ export default async function StaffDashboardPage() {
                 key={action.title}
                 {...action}
                 href={
-                  "href" in action && role !== "viewer"
+                  "href" in action &&
+                  (role !== "viewer" || action.icon === "team")
                     ? action.href
                     : undefined
                 }
