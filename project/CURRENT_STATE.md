@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-29
 
-Working branch: `feature/activities-management`
+Working branch: `feature/team-management`
 
 ## Implemented
 
@@ -57,6 +57,15 @@ Working branch: `feature/activities-management`
   location fields only.
 - No production activity rows were created or modified during automated
   validation.
+- Role-aware team management is implemented locally with staff list, create,
+  edit, publish, archive, delete, and administrator-only ordering controls
+  enforced through the publishable-key SSR client and existing team-member RLS
+  policies.
+- The public leadership section reads published team-member records in display
+  order, renders approved local portraits or initials, and retains the
+  established Audit Team Leader presentation when no published records exist.
+- No production team-member rows were created or modified during automated
+  validation.
 
 ## Repository state
 
@@ -68,8 +77,8 @@ Working branch: `feature/activities-management`
 ## Not implemented
 
 - Confirmed public phone, email, exact street address, and published media content.
-- Staff management for team members, jurisdictions, media, roles, password
-  reset, and account-registration workflows.
+- Staff management for jurisdictions, media, roles, password reset, and
+  account-registration workflows.
 - Supabase Storage buckets, upload policies, jurisdiction records, media,
   public content, or application data access.
 - Vercel project or deployment configuration.
@@ -112,7 +121,7 @@ No chief officers, accountants, or other personal information is included.
 
 Review and apply the caller-only role helper migration through the approved
 database process if it is not yet deployed, then manually validate staff
-authentication, announcement permissions, and activity permissions with
+authentication, announcement, activity, and team-management permissions with
 disposable admin, editor, and viewer test accounts.
 
 ## Proposed next steps — require task approval
@@ -125,7 +134,9 @@ disposable admin, editor, and viewer test accounts.
    against the deployed RLS policies without using production content.
 4. Privately test the activity draft, publish, archive, and delete workflow
    against the deployed RLS policies without using production content.
-5. Keep Storage and uploads deferred until the documented dependency and
+5. Privately test team publication, ordering, fallback, and deletion with
+   disposable records only.
+6. Keep Storage and uploads deferred until the documented dependency and
    security gates are resolved.
 
 Update this file whenever implemented capabilities, integrations, or immediate next steps materially change.
