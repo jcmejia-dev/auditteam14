@@ -17,8 +17,8 @@ export async function JurisdictionSection() {
       <div className="page-shell relative z-10">
         <SectionHeading
           eyebrow="Audit jurisdiction"
-          title="Institutions within the team’s area of responsibility"
-          description="Explore the listed hospitals and offices by name, category, or location."
+          title="Interactive jurisdiction explorer"
+          description="Search and explore published jurisdiction locations by institution, category, or general location."
         />
         <JurisdictionExplorer locations={locations} />
       </div>

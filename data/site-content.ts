@@ -23,7 +23,7 @@ export const siteContent = {
   },
   navigation: [
     { label: "Home", href: "#home" },
-    { label: "About", href: "#about" },
+    { label: "Institutional", href: "#institutional-information" },
     { label: "Mandate", href: "#mandate" },
     { label: "Jurisdiction", href: "#jurisdiction" },
     { label: "Leadership", href: "#leadership" },
@@ -44,40 +44,74 @@ export const siteContent = {
       description: "Standards that shape our work.",
     },
   ] satisfies InformationItem[],
-  about: {
-    eyebrow: "About Audit Team 14",
-    title: "Public service grounded in accountability.",
+  institutional: {
+    eyebrow: "Institutional information",
+    title: "Audit Team 14 at a glance",
     introduction:
       "Audit Team 14 serves under the Commission on Audit – BARMM, Audit Group C – Maguindanao. This portal provides public access to the team’s institutional information, activities, and approved updates.",
+    organization: [
+      {
+        label: "Commission",
+        value: "Commission on Audit – BARMM",
+      },
+      {
+        label: "Audit group",
+        value: "Audit Group C – Maguindanao",
+      },
+      {
+        label: "Audit team",
+        value: "Audit Team 14",
+      },
+      {
+        label: "Team Leader",
+        value: "Bernard R. Sero, DHum, MBA",
+      },
+    ],
+    coverage: [
+      {
+        label: "Region",
+        value:
+          "Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)",
+      },
+      {
+        label: "Primary location",
+        value: "Cotabato City",
+      },
+      {
+        label: "Focus",
+        value: "Public-sector auditing and accountability",
+      },
+    ],
   },
   vision: {
     title: "Vision",
-    text: "A credible, trustworthy and independent Supreme Audit Institution; a vibrant partner in nation-building; a bulwark of integrity and competence; an organization of professionals with a culture of excellence; a respected member of international organizations of Supreme Audit Institutions.",
+    text: "A trustworthy, respected and independent audit institution that is an enabling partner of government in ensuring a better life for every Filipino.",
   },
   mission: {
     title: "Mission",
-    text: "To carry out our constitutional mandate with the highest degree of professionalism, competence, integrity, teamwork and organizational efficiency, and promote the people's trust in government by upholding public accountability.",
+    text: "To ensure accountability for public resources, promote transparency, and help improve government operations, in partnership with stakeholders, for the benefit of the Filipino people.",
   },
   values: [
     {
-      title: "Integrity",
-      description: "Acting with honesty and sound judgment.",
+      title: "God Centeredness",
     },
     {
-      title: "Professionalism",
-      description: "Serving with competence and discipline.",
-    },
-    {
-      title: "Accountability",
-      description: "Taking responsibility for public trust.",
-    },
-    {
-      title: "Teamwork",
-      description: "Working together with shared purpose.",
+      title: "Patriotism",
     },
     {
       title: "Excellence",
-      description: "Pursuing quality in every responsibility.",
+    },
+    {
+      title: "Integrity",
+    },
+    {
+      title: "Professionalism",
+    },
+    {
+      title: "Courtesy, Modesty and Humility",
+    },
+    {
+      title: "Reverence for Truth and the Rule of Law",
     },
   ] as const,
   leadership: {

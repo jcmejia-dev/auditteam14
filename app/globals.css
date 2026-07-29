@@ -230,6 +230,152 @@ section[id] {
   opacity: 0.42;
 }
 
+.institutional-field {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.institutional-field::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      circle at 82% 18%,
+      rgba(36, 77, 147, 0.085),
+      transparent 30rem
+    ),
+    linear-gradient(120deg, transparent 60%, rgba(195, 154, 74, 0.055));
+  content: "";
+}
+
+.institutional-watermark {
+  position: absolute;
+  top: 4rem;
+  right: -9rem;
+  z-index: 0;
+  width: 27rem;
+  aspect-ratio: 1;
+  border: 1px solid #244d93;
+  border-radius: 9999px;
+  color: #c39a4a;
+  opacity: 0.055;
+}
+
+.institutional-watermark::before,
+.institutional-watermark::after {
+  position: absolute;
+  inset: 16%;
+  border: 1px solid currentColor;
+  border-radius: inherit;
+  content: "";
+}
+
+.institutional-watermark::after {
+  inset: 31%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    currentColor 0deg 5deg,
+    transparent 5deg 45deg
+  );
+  border: 0;
+}
+
+.institutional-watermark > span {
+  position: absolute;
+  inset: 42%;
+  background: currentColor;
+  border-radius: 9999px;
+}
+
+.institutional-card {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  padding: 1.5rem;
+  border-radius: 0.125rem;
+}
+
+.institutional-card::after {
+  position: absolute;
+  right: -4rem;
+  bottom: -5rem;
+  width: 12rem;
+  height: 12rem;
+  border: 1px solid currentColor;
+  border-radius: 9999px;
+  content: "";
+  opacity: 0.08;
+}
+
+.institutional-card-primary {
+  border-top: 4px solid #c39a4a;
+  background:
+    linear-gradient(145deg, rgba(36, 77, 147, 0.18), transparent 46%),
+    #102a43;
+  box-shadow: 0 24px 55px rgba(16, 42, 67, 0.16);
+  color: #ffffff;
+}
+
+.institutional-card-secondary {
+  border: 1px solid rgba(16, 42, 67, 0.12);
+  border-top: 4px solid #3f7775;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 20px 48px rgba(16, 42, 67, 0.08);
+  color: #102a43;
+}
+
+.institutional-wave {
+  position: absolute;
+  right: -8%;
+  bottom: -3.75rem;
+  z-index: 0;
+  width: 72%;
+  height: 7rem;
+  border-radius: 50% 50% 0 0;
+  background: rgba(36, 77, 147, 0.065);
+  box-shadow:
+    -20rem -0.65rem 0 rgba(166, 43, 53, 0.035),
+    0 -2px 0 rgba(195, 154, 74, 0.28);
+  transform: rotate(-2deg);
+}
+
+.values-field {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.values-field::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(115deg, rgba(36, 77, 147, 0.18), transparent 42%),
+    radial-gradient(
+      circle at 88% 18%,
+      rgba(195, 154, 74, 0.14),
+      transparent 24rem
+    );
+  content: "";
+}
+
+.values-wave {
+  position: absolute;
+  right: -10%;
+  bottom: -4.25rem;
+  z-index: 0;
+  width: 68%;
+  height: 7rem;
+  border-radius: 50% 50% 0 0;
+  background: rgba(247, 244, 236, 0.12);
+  box-shadow:
+    -24rem -0.45rem 0 rgba(36, 77, 147, 0.15),
+    0 -2px 0 rgba(195, 154, 74, 0.4);
+  transform: rotate(-2deg);
+}
+
 .lock-icon {
   position: relative;
   display: inline-block;
@@ -430,6 +576,10 @@ section[id] {
 }
 
 @media (min-width: 1024px) {
+  .institutional-card {
+    padding: 2.25rem;
+  }
+
   .hero-flag-watermark {
     top: 8rem;
     right: -4rem;

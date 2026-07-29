@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-29
 
-Working branch: `feature/vercel-readiness`
+Working branch: `feature/institutional-information`
 
 ## Implemented
 
@@ -89,6 +89,9 @@ Working branch: `feature/vercel-readiness`
   metadata URL resolution, a documented public site-origin variable, and a
   manual deployment checklist. No Vercel project has been connected or
   deployed.
+- The public institutional overview now presents confirmed organizational and
+  regional details, the current official Commission on Audit Vision, Mission,
+  and seven Core Values. Unconfirmed personnel fields remain omitted.
 
 ## Repository state
 
