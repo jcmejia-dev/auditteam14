@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-29
 
-Working branch: `feature/staff-auth`
+Working branch: `feature/announcements-management`
 
 ## Implemented
 
@@ -41,6 +41,14 @@ Working branch: `feature/staff-auth`
 - A review-only follow-up migration defines `public.get_my_role()` so an
   authenticated caller can retrieve only their own active role. This migration
   has not been applied remotely.
+- Role-aware announcement management is implemented locally with staff list,
+  create, edit, publish, archive, and delete interfaces enforced through the
+  publishable-key SSR client and existing RLS policies.
+- The public homepage reads only published, unexpired announcements through the
+  anonymous RLS policy and presents a professional empty state when none are
+  available.
+- No production announcement rows were created or modified during automated
+  validation.
 
 ## Repository state
 
@@ -52,8 +60,8 @@ Working branch: `feature/staff-auth`
 ## Not implemented
 
 - Confirmed public phone, email, exact street address, and published media content.
-- Staff content management, publishing, role management, password reset, and
-  account-registration workflows.
+- Staff management for activities, team members, jurisdictions, media, roles,
+  password reset, and account-registration workflows.
 - Supabase Storage buckets, upload policies, jurisdiction records, media,
   public content, or application data access.
 - Vercel project or deployment configuration.
@@ -95,8 +103,9 @@ No chief officers, accountants, or other personal information is included.
 ## Confirmed next direction
 
 Review and apply the caller-only role helper migration through the approved
-database process, then manually validate the staff authentication experience
-with an authorized test account.
+database process if it is not yet deployed, then manually validate staff
+authentication and announcement permissions with disposable admin, editor, and
+viewer test accounts.
 
 ## Proposed next steps — require task approval
 
@@ -104,8 +113,8 @@ with an authorized test account.
    ledger or other users' assignments.
 2. Manually test authorized and unassigned-user access without recording
    credentials.
-3. Confirm the remaining draft/review/publish workflow before adding content
-   mutations.
+3. Privately test the announcement draft, publish, archive, and delete workflow
+   against the deployed RLS policies without using production content.
 4. Keep Storage and uploads deferred until the documented dependency and
    security gates are resolved.
 
