@@ -37,7 +37,7 @@ const quickActions = [
   },
   {
     title: "Manage Media",
-    description: "Organize approved photo albums and review media publication.",
+    description: "Organize approved photo albums and public media.",
     icon: "media",
     href: "/staff/media",
   },
