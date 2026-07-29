@@ -40,7 +40,7 @@ export function PhotoUploadForm({
             name="file"
             type="file"
             required
-            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            accept=".jpg,.jpeg,.jpe,.jfif,.png,.webp,image/jpeg,image/png,image/webp"
             aria-describedby="photo-file-help"
             className={`${inputClass} file:mr-4 file:rounded-sm file:border-0 file:bg-navy-900 file:px-4 file:py-2 file:font-bold file:text-white`}
           />
@@ -48,8 +48,9 @@ export function PhotoUploadForm({
             id="photo-file-help"
             className="mt-2 text-sm leading-6 text-slate-600"
           >
-            JPEG, PNG, or WebP only. Maximum 4 MB. GIF, TIFF, SVG, PDF, video,
-            HTML, executables, and unknown formats are rejected.
+            JPEG (JPG, JPEG, JFIF), PNG, or WebP only. Maximum 4 MB. SVG, GIF,
+            TIFF, BMP, PDF, HTML, executables, video, and unknown formats are
+            rejected.
           </p>
           {state.itemFieldErrors?.file ? (
             <p className="mt-2 text-sm font-semibold text-red-700">

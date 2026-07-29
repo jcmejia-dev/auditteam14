@@ -28,6 +28,7 @@ type ValidatedUpload = {
 };
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+const JPEG_EXTENSIONS = new Set(["jpg", "jpeg", "jpe", "jfif"]);
 
 function textValue(formData: FormData, name: string) {
   const value = formData.get(name);
@@ -233,15 +234,14 @@ export async function validateImageUpload(
 
   const extension = value.name.split(".").pop()?.toLowerCase();
   const allowedByExtension =
-    extension === "jpg" ||
-    extension === "jpeg" ||
+    (extension !== undefined && JPEG_EXTENSIONS.has(extension)) ||
     extension === "png" ||
     extension === "webp";
 
   if (!allowedByExtension) {
     return {
       success: false,
-      error: "Use a JPEG, PNG, or WebP image only.",
+      error: "Use a JPEG, JFIF, PNG, or WebP image only.",
     };
   }
 
@@ -259,7 +259,8 @@ export async function validateImageUpload(
   const validPair =
     (isJpeg &&
       value.type === "image/jpeg" &&
-      (extension === "jpg" || extension === "jpeg")) ||
+      extension !== undefined &&
+      JPEG_EXTENSIONS.has(extension)) ||
     (isPng && value.type === "image/png" && extension === "png") ||
     (isWebp && value.type === "image/webp" && extension === "webp");
 
@@ -267,7 +268,7 @@ export async function validateImageUpload(
     return {
       success: false,
       error:
-        "The file contents, type, and extension do not identify the same supported image format.",
+        "This file’s name does not match its actual image format. Please choose a genuine JPEG, JFIF, PNG, or WebP image.",
     };
   }
 
