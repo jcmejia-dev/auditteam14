@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-29
 
-Working branch: `feature/jurisdiction-management`
+Working branch: `feature/audit-history`
 
 ## Implemented
 
@@ -78,6 +78,13 @@ Working branch: `feature/jurisdiction-management`
   seeded automatically and still require stakeholder confirmation.
 - No production jurisdiction rows were created or modified during automated
   validation.
+- Administrator-only, read-only audit history is implemented locally with
+  bounded server pagination and validated action, content-type, and date
+  filters. It displays safe labels when current RLS permits resolution and
+  never renders raw UUIDs or unrestricted row data.
+- Audit history remains protected by signed-claim validation, the caller-only
+  active-role lookup, the admin-only page check, and the existing
+  `audit_logs` RLS policy. No audit records are mutated by the interface.
 
 ## Repository state
 
@@ -150,7 +157,9 @@ disposable admin, editor, and viewer test accounts.
    disposable records only.
 6. Privately test jurisdiction publication, ordering, fallback, map
    interactions, and deletion with disposable records only.
-7. Keep Storage and uploads deferred until the documented dependency and
+7. Privately verify audit-history visibility, filters, pagination, and safe
+   fallback labels with an administrator account.
+8. Keep Storage and uploads deferred until the documented dependency and
    security gates are resolved.
 
 Update this file whenever implemented capabilities, integrations, or immediate next steps materially change.

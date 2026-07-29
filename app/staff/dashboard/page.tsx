@@ -42,8 +42,9 @@ const quickActions = [
   },
   {
     title: "Audit History",
-    description: "Review authorized administrative events in a future release.",
+    description: "Review the protected history of administrative events.",
     icon: "history",
+    href: "/staff/audit-history",
   },
 ] as const;
 
@@ -134,7 +135,8 @@ export default async function StaffDashboardPage() {
                   "href" in action &&
                   (role !== "viewer" ||
                     action.icon === "team" ||
-                    action.icon === "map")
+                    action.icon === "map") &&
+                  (action.icon !== "history" || role === "admin")
                     ? action.href
                     : undefined
                 }
@@ -143,6 +145,8 @@ export default async function StaffDashboardPage() {
                     action.icon === "activity") &&
                   role === "viewer"
                     ? "Read-only role"
+                    : action.icon === "history" && role !== "admin"
+                      ? "Administrator only"
                     : undefined
                 }
               />
