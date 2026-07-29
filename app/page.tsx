@@ -3,6 +3,7 @@ import { ContactSection } from "@/components/public/contact-section";
 import { Hero } from "@/components/public/hero";
 import { JurisdictionSection } from "@/components/public/jurisdiction-section";
 import { LeadershipSection } from "@/components/public/leadership-section";
+import { LatestActivitiesSection } from "@/components/public/latest-activities-section";
 import { LatestAnnouncementsSection } from "@/components/public/latest-announcements-section";
 import { MediaSection } from "@/components/public/media-section";
 import { SiteFooter } from "@/components/public/site-footer";
@@ -25,6 +26,7 @@ export default function Home() {
       <main id="main-content">
         <Hero />
         <LatestAnnouncementsSection />
+        <LatestActivitiesSection />
         <AboutSection />
         <VisionMissionSection />
         <JurisdictionSection />
