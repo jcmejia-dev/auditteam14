@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-29
 
-Working branch: `feature/team-management`
+Working branch: `feature/jurisdiction-management`
 
 ## Implemented
 
@@ -66,6 +66,18 @@ Working branch: `feature/team-management`
   established Audit Team Leader presentation when no published records exist.
 - No production team-member rows were created or modified during automated
   validation.
+- Role-aware jurisdiction management is implemented locally with staff list,
+  create, edit, publish, archive, delete, and administrator-only ordering
+  controls enforced through the publishable-key SSR client and existing
+  jurisdiction RLS policies.
+- The public jurisdiction section reads published database records in display
+  order and passes only safe public fields into the Leaflet map. Database UUIDs,
+  actor fields, timestamps, drafts, and archives are not sent to the map.
+- The six static legacy jurisdiction entries remain the public fallback when
+  the anonymous database read fails or returns no published rows. They are not
+  seeded automatically and still require stakeholder confirmation.
+- No production jurisdiction rows were created or modified during automated
+  validation.
 
 ## Repository state
 
@@ -77,8 +89,8 @@ Working branch: `feature/team-management`
 ## Not implemented
 
 - Confirmed public phone, email, exact street address, and published media content.
-- Staff management for jurisdictions, media, roles, password reset, and
-  account-registration workflows.
+- Staff management for media, roles, password reset, and account-registration
+  workflows.
 - Supabase Storage buckets, upload policies, jurisdiction records, media,
   public content, or application data access.
 - Vercel project or deployment configuration.
@@ -136,7 +148,9 @@ disposable admin, editor, and viewer test accounts.
    against the deployed RLS policies without using production content.
 5. Privately test team publication, ordering, fallback, and deletion with
    disposable records only.
-6. Keep Storage and uploads deferred until the documented dependency and
+6. Privately test jurisdiction publication, ordering, fallback, map
+   interactions, and deletion with disposable records only.
+7. Keep Storage and uploads deferred until the documented dependency and
    security gates are resolved.
 
 Update this file whenever implemented capabilities, integrations, or immediate next steps materially change.
