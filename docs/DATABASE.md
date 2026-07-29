@@ -38,7 +38,7 @@ exposing the table through PostgREST.
 | `public.activities` | Approved activity information | Publication state, activity date, general location, and ordering |
 | `public.jurisdictions` | Confirmed audit-jurisdiction locations | Publication state and constrained coordinates; no legacy data is seeded |
 | `public.albums` | Grouping metadata for approved media | Parent of optional `media_items` records |
-| `public.media_items` | Image/video metadata for future approved assets | Optional album relationship; publication requires a constrained relative object key, but no bucket exists |
+| `public.media_items` | Image/video metadata for approved assets | Optional album relationship; publication requires a constrained relative object key; the review-only video migration adds an optional event date and a protected upload-completion timestamp |
 | `public.public_documents` | Metadata for approved public documents | Publication requires a constrained relative object key, but no bucket exists |
 | `public.audit_logs` | Append-only mutation event metadata | Records actor, operation, table, entity UUID, and time without copying row contents |
 
@@ -199,9 +199,24 @@ the private bucket and policies are applied and verified.
 
 The current `albums` table has no separate event-date field. Public gallery
 dates are therefore labeled as publication dates. The current `media_items`
-table also has no allowlisted external-video provider or source field. External
-video publishing and video-file uploads remain disabled rather than using
-arbitrary URLs, HTML, or iframe code.
+table has no external-video provider or source field, and arbitrary URLs, HTML,
+and iframe code remain prohibited.
+
+A forward-only review migration,
+`20260729000300_create_secure_video_storage.sql`, adds
+`media_items.event_date` and `video_upload_completed_at`, plus a private
+`audit-team-14-videos` bucket. It does not alter the existing photo bucket or
+policies. Video publication requires a non-null completion timestamp, which
+the application sets only after authenticated Storage metadata confirms the
+server-reserved MP4/WebM object, MIME type, and size.
+
+Video object keys use a server-generated opaque
+`<32-hex-token>/<same-token>.(mp4|webm)` shape. Storage INSERT requires the exact
+caller-owned draft `media_items` reservation and the existing admin/editor
+role rules. No Storage UPDATE policy exists, so overwrite/upsert remains
+unavailable. Anonymous signing/read operations require a completed published
+video and, when attached, a published album. The migration and its read-only
+verification file have not been executed remotely.
 
 ## Required review before the follow-up migration
 

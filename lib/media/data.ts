@@ -4,6 +4,11 @@ import { createPublicClient } from "@/lib/supabase/public";
 
 import { MEDIA_BUCKET } from "./storage";
 import {
+  STAFF_VIDEO_PREVIEW_SECONDS,
+  VIDEO_BUCKET,
+  VIDEO_SIGNED_URL_SECONDS,
+} from "./storage";
+import {
   mediaPublicationStatuses,
   type AlbumRecord,
   type MediaItemRecord,
@@ -11,6 +16,7 @@ import {
   type PublicPhoto,
   type PublicPhotoAlbum,
   type PublicPhotoAlbumDetail,
+  type PublicVideo,
 } from "./types";
 
 type DatabaseAlbum = {
@@ -32,7 +38,9 @@ type DatabaseMediaItem = {
   title: unknown;
   alt_text: unknown;
   caption: unknown;
+  event_date?: unknown;
   storage_path: unknown;
+  video_upload_completed_at?: unknown;
   status: unknown;
   published_at: unknown;
   display_order: unknown;
@@ -102,7 +110,11 @@ function normalizeMediaItem(
     title: value.title,
     altText: nullableString(value.alt_text),
     caption: nullableString(value.caption),
+    eventDate: nullableString(value.event_date),
     storagePath: nullableString(value.storage_path),
+    videoUploadCompletedAt: nullableString(
+      value.video_upload_completed_at,
+    ),
     status: value.status,
     publishedAt: nullableString(value.published_at),
     displayOrder: value.display_order,
@@ -115,6 +127,8 @@ const albumColumns =
   "id,title,slug,description,status,published_at,display_order,created_at,updated_at";
 const itemColumns =
   "id,album_id,media_type,title,alt_text,caption,storage_path,status,published_at,display_order,created_at,updated_at";
+const videoItemColumns = `${itemColumns},event_date,video_upload_completed_at`;
+const publicVideoColumns = `${itemColumns},event_date`;
 
 export async function getStaffAlbums(supabase: SupabaseClient) {
   const { data, error } = await supabase
@@ -186,6 +200,132 @@ export async function getStaffMediaItem(
   return error || !data
     ? null
     : normalizeMediaItem(data as DatabaseMediaItem);
+}
+
+export async function getStaffVideoItem(
+  supabase: SupabaseClient,
+  id: string,
+) {
+  const { data, error } = await supabase
+    .from("media_items")
+    .select(videoItemColumns)
+    .eq("id", id)
+    .eq("media_type", "video")
+    .maybeSingle();
+
+  return error || !data
+    ? null
+    : normalizeMediaItem(data as DatabaseMediaItem);
+}
+
+export async function getStaffVideos(supabase: SupabaseClient) {
+  const { data, error } = await supabase
+    .from("media_items")
+    .select(videoItemColumns)
+    .eq("media_type", "video")
+    .order("display_order", { ascending: true })
+    .order("updated_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    return { videos: [], error: true };
+  }
+
+  const videos = (data ?? [])
+    .map((value) => normalizeMediaItem(value as DatabaseMediaItem))
+    .filter(
+      (value): value is MediaItemRecord =>
+        value !== null && value.mediaType === "video",
+    );
+
+  return { videos, error: false };
+}
+
+function safeSignedUrl(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "https:" &&
+      url.hostname.endsWith(".supabase.co") &&
+      url.pathname.includes(`/storage/v1/object/sign/${VIDEO_BUCKET}/`)
+      ? url.toString()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function createStaffVideoPreviewUrl(
+  supabase: SupabaseClient,
+  storagePath: string,
+) {
+  const { data, error } = await supabase.storage
+    .from(VIDEO_BUCKET)
+    .createSignedUrl(storagePath, STAFF_VIDEO_PREVIEW_SECONDS);
+
+  return error ? null : safeSignedUrl(data?.signedUrl);
+}
+
+export async function getPublishedVideos(
+  limit = 24,
+): Promise<PublicVideo[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("media_items")
+    .select(publicVideoColumns)
+    .eq("media_type", "video")
+    .eq("status", "published")
+    .order("display_order", { ascending: true })
+    .order("event_date", { ascending: false, nullsFirst: false })
+    .order("published_at", { ascending: false })
+    .limit(Math.min(Math.max(limit, 1), 100));
+
+  if (error) {
+    return [];
+  }
+
+  const videos = (data ?? [])
+    .map((value) => normalizeMediaItem(value as DatabaseMediaItem))
+    .filter(
+      (value): value is MediaItemRecord =>
+        value !== null &&
+        value.mediaType === "video" &&
+        value.storagePath !== null &&
+        value.altText !== null,
+    );
+
+  const signedVideos = await Promise.all(
+    videos.map(async (video) => {
+      const { data: signed, error: signError } = await supabase.storage
+        .from(VIDEO_BUCKET)
+        .createSignedUrl(
+          video.storagePath as string,
+          VIDEO_SIGNED_URL_SECONDS,
+        );
+      const playbackUrl = signError
+        ? null
+        : safeSignedUrl(signed?.signedUrl);
+
+      return playbackUrl
+        ? {
+            title: video.title,
+            accessibleDescription: video.altText as string,
+            caption: video.caption,
+            eventDate: video.eventDate,
+            publishedAt: video.publishedAt,
+            playbackUrl,
+          }
+        : null;
+    }),
+  );
+
+  return signedVideos.filter(
+    (video): video is PublicVideo => video !== null,
+  );
 }
 
 export function getPhotoAssetSrc(albumSlug: string, position: number) {

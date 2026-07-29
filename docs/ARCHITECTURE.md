@@ -19,6 +19,9 @@
   Storage migration and guarded image-upload workflow exist for the media
   gallery, but uploads remain disabled until that migration is applied and
   verified.
+- A separate review-only video migration and browser uploader support direct
+  MP4/WebM TUS transfers to a private Supabase bucket. Video bytes bypass
+  Next.js and Vercel; server actions reserve and finalize draft metadata only.
 
 The system must support a public institutional website and a private staff dashboard while keeping confidential audit material outside the product.
 
@@ -61,6 +64,14 @@ A proposed lifecycle is `draft → in_review → approved → published → arch
   anonymous RLS. Image bytes are delivered through a same-origin route that
   resolves approved records server-side, verifies a supported file signature,
   and does not reveal database UUIDs or Storage object keys.
+- Public video metadata is selected through anonymous RLS. The dynamic video
+  page creates short-lived private-bucket playback URLs only for completed
+  published records. The browser streams directly from Supabase Storage so
+  Range requests and seeking do not pass through a Vercel Function.
+- Staff video uploads obtain the current browser session token solely as a
+  credential for Supabase Storage. Authorization decisions remain server- and
+  RLS-enforced through signed claims, `get_my_role()`, a server-reserved opaque
+  path, a caller-owned draft row, and private Storage policies.
 
 ### Service access
 

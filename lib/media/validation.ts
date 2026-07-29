@@ -14,6 +14,7 @@ export type MediaItemField =
   | "title"
   | "altText"
   | "caption"
+  | "eventDate"
   | "displayOrder"
   | "file";
 export type MediaItemFieldErrors = Partial<
@@ -108,7 +109,34 @@ export function validateAlbumForm(formData: FormData):
   };
 }
 
-export function validateMediaItemForm(formData: FormData):
+function parseEventDate(value: string, errors: MediaItemFieldErrors) {
+  if (!value) {
+    return null;
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    errors.eventDate = "Enter a valid event date.";
+    return null;
+  }
+
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.toISOString().slice(0, 10) !== value ||
+    Number(value.slice(0, 4)) < 1900
+  ) {
+    errors.eventDate = "Enter a valid event date from 1900 onward.";
+    return null;
+  }
+
+  return value;
+}
+
+export function validateMediaItemForm(
+  formData: FormData,
+  mediaType: "image" | "video" = "image",
+):
   | {
       success: true;
       values: MediaItemFormValues;
@@ -116,6 +144,7 @@ export function validateMediaItemForm(formData: FormData):
         title: string;
         alt_text: string | null;
         caption: string | null;
+        event_date?: string | null;
         display_order: number;
       };
     }
@@ -127,8 +156,13 @@ export function validateMediaItemForm(formData: FormData):
   const title = textValue(formData, "title").trim();
   const altText = textValue(formData, "altText").trim();
   const caption = textValue(formData, "caption").trim();
+  const eventDateValue = textValue(formData, "eventDate").trim();
   const errors: MediaItemFieldErrors = {};
   const displayOrder = parseDisplayOrder(formData, errors);
+  const eventDate =
+    mediaType === "video"
+      ? parseEventDate(eventDateValue, errors)
+      : null;
 
   if (title.length < 1 || title.length > 240) {
     errors.title = "Enter a title between 1 and 240 characters.";
@@ -136,14 +170,22 @@ export function validateMediaItemForm(formData: FormData):
 
   if (altText.length < 1 || altText.length > 500) {
     errors.altText =
-      "Describe the image in 1 to 500 characters for accessibility.";
+      mediaType === "video"
+        ? "Describe the video in 1 to 500 characters for accessibility."
+        : "Describe the image in 1 to 500 characters for accessibility.";
   }
 
   if (caption.length > 2000) {
     errors.caption = "Keep the caption within 2,000 characters.";
   }
 
-  const values = { title, altText, caption, displayOrder };
+  const values = {
+    title,
+    altText,
+    caption,
+    eventDate: mediaType === "video" ? eventDateValue : "",
+    displayOrder,
+  };
 
   if (Object.keys(errors).length > 0) {
     return { success: false, errors, values };
@@ -156,6 +198,7 @@ export function validateMediaItemForm(formData: FormData):
       title,
       alt_text: altText,
       caption: caption || null,
+      ...(mediaType === "video" ? { event_date: eventDate } : {}),
       display_order: displayOrder,
     },
   };

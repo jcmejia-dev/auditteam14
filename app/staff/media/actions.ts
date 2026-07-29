@@ -1,6 +1,6 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -10,8 +10,14 @@ import {
   getStaffAlbum,
   getStaffMediaItem,
   getStaffMediaItems,
+  getStaffVideoItem,
 } from "@/lib/media/data";
-import { MEDIA_BUCKET } from "@/lib/media/storage";
+import {
+  isVideoStorageReady,
+  MEDIA_BUCKET,
+  verifyStoredVideoObject,
+  VIDEO_BUCKET,
+} from "@/lib/media/storage";
 import { isMediaUuid } from "@/lib/media/types";
 import {
   type AlbumFieldErrors,
@@ -20,11 +26,49 @@ import {
   validateImageUpload,
   validateMediaItemForm,
 } from "@/lib/media/validation";
+import {
+  validateVideoFileDescriptor,
+  type SupportedVideoType,
+} from "@/lib/media/video-validation";
 
 export type MediaActionState = {
   message: string | null;
   albumFieldErrors?: AlbumFieldErrors;
   itemFieldErrors?: MediaItemFieldErrors;
+};
+
+export type VideoUploadRequest = {
+  title: string;
+  accessibleDescription: string;
+  caption: string;
+  eventDate: string;
+  displayOrder: number;
+  albumId: string | null;
+  fileSize: number;
+  contentType: string;
+  extension: string;
+};
+
+export type VideoUploadActionResult =
+  | {
+      success: true;
+      message: string;
+      reservation: {
+        mediaId: string;
+        storagePath: string;
+        contentType: SupportedVideoType;
+      };
+    }
+  | {
+      success: false;
+      message: string;
+      fieldErrors?: MediaItemFieldErrors;
+    };
+
+export type VideoUploadCompletionResult = {
+  success: boolean;
+  message: string;
+  editPath?: string;
 };
 
 const GENERIC_SAVE_ERROR =
@@ -74,6 +118,49 @@ function databaseErrorMessage(code: string | undefined) {
   }
 
   return GENERIC_SAVE_ERROR;
+}
+
+function mediaItemDestination(item: {
+  albumId: string | null;
+  mediaType: "image" | "video";
+}) {
+  return item.albumId
+    ? `/staff/media/albums/${item.albumId}/edit`
+    : "/staff/media";
+}
+
+function appendNotice(path: string, notice: string) {
+  return `${path}?notice=${notice}`;
+}
+
+function videoMetadataFormData(input: VideoUploadRequest) {
+  const formData = new FormData();
+  formData.set("title", input.title);
+  formData.set("altText", input.accessibleDescription);
+  formData.set("caption", input.caption);
+  formData.set("eventDate", input.eventDate);
+  formData.set("displayOrder", String(input.displayOrder));
+  return formData;
+}
+
+function isVideoUploadRequest(value: unknown): value is VideoUploadRequest {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const input = value as Record<string, unknown>;
+
+  return (
+    typeof input.title === "string" &&
+    typeof input.accessibleDescription === "string" &&
+    typeof input.caption === "string" &&
+    typeof input.eventDate === "string" &&
+    typeof input.displayOrder === "number" &&
+    (input.albumId === null || typeof input.albumId === "string") &&
+    typeof input.fileSize === "number" &&
+    typeof input.contentType === "string" &&
+    typeof input.extension === "string"
+  );
 }
 
 export async function createAlbumAction(
@@ -369,6 +456,251 @@ export async function uploadPhotoAction(
   );
 }
 
+export async function prepareVideoUploadAction(
+  untrustedInput: unknown,
+): Promise<VideoUploadActionResult> {
+  const context = await getActionContext();
+
+  if (
+    !canEditDrafts(context.role) ||
+    !isVideoUploadRequest(untrustedInput)
+  ) {
+    return { success: false, message: GENERIC_PERMISSION_ERROR };
+  }
+
+  const input = untrustedInput;
+  const descriptor = validateVideoFileDescriptor({
+    size: input.fileSize,
+    contentType: input.contentType,
+    extension: input.extension,
+  });
+
+  if (!descriptor.success) {
+    return {
+      success: false,
+      message: descriptor.message,
+      fieldErrors: { file: descriptor.message },
+    };
+  }
+
+  const metadata = validateMediaItemForm(
+    videoMetadataFormData(input),
+    "video",
+  );
+
+  if (!metadata.success) {
+    return {
+      success: false,
+      message: "Review the highlighted details before uploading.",
+      fieldErrors: metadata.errors,
+    };
+  }
+
+  const albumId = input.albumId?.trim() || null;
+
+  if (albumId && !isMediaUuid(albumId)) {
+    return {
+      success: false,
+      message: "Choose a valid album or leave the album selection empty.",
+    };
+  }
+
+  if (albumId) {
+    const album = await getStaffAlbum(context.supabase, albumId);
+
+    if (
+      !album ||
+      (context.role === "editor" && album.status !== "draft")
+    ) {
+      return { success: false, message: GENERIC_PERMISSION_ERROR };
+    }
+  }
+
+  if (!(await isVideoStorageReady(context.supabase))) {
+    return {
+      success: false,
+      message:
+        "Secure video Storage is not ready. Ask an administrator to verify the reviewed migration.",
+    };
+  }
+
+  const mediaId = randomUUID();
+  const objectToken = randomBytes(16).toString("hex");
+  const storagePath = `${objectToken}/${objectToken}.${descriptor.extension}`;
+  const { data, error } = await context.supabase
+    .from("media_items")
+    .insert({
+      id: mediaId,
+      album_id: albumId,
+      media_type: "video",
+      ...metadata.databaseValues,
+      storage_path: storagePath,
+      status: "draft",
+      video_upload_completed_at: null,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    return { success: false, message: GENERIC_SAVE_ERROR };
+  }
+
+  revalidatePath("/staff/media");
+
+  return {
+    success: true,
+    message: "The secure draft path is ready. Starting the upload now.",
+    reservation: {
+      mediaId,
+      storagePath,
+      contentType: descriptor.contentType,
+    },
+  };
+}
+
+export async function finalizeVideoUploadAction(
+  mediaId: string,
+): Promise<VideoUploadCompletionResult> {
+  const context = await getActionContext();
+
+  if (!isMediaUuid(mediaId) || !canEditDrafts(context.role)) {
+    return { success: false, message: GENERIC_PERMISSION_ERROR };
+  }
+
+  const item = await getStaffVideoItem(context.supabase, mediaId);
+
+  if (
+    !item ||
+    item.status !== "draft" ||
+    !item.storagePath ||
+    item.videoUploadCompletedAt
+  ) {
+    return {
+      success: false,
+      message:
+        "The video draft is unavailable or has already been verified.",
+    };
+  }
+
+  if (
+    !(await verifyStoredVideoObject(
+      context.supabase,
+      item.storagePath,
+    ))
+  ) {
+    return {
+      success: false,
+      message:
+        "The upload finished, but Storage could not verify the completed MP4/WebM object yet. Use Retry verification.",
+    };
+  }
+
+  const { data, error } = await context.supabase
+    .from("media_items")
+    .update({ video_upload_completed_at: new Date().toISOString() })
+    .eq("id", item.id)
+    .eq("status", "draft")
+    .is("video_upload_completed_at", null)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    return {
+      success: false,
+      message:
+        "The video is stored safely, but its draft could not be finalized. Use Retry verification.",
+    };
+  }
+
+  revalidateMediaPaths();
+  revalidatePath(`/staff/media/items/${item.id}/edit`);
+
+  return {
+    success: true,
+    message: "The video was uploaded and saved as a draft.",
+    editPath: `/staff/media/items/${item.id}/edit?notice=video-uploaded`,
+  };
+}
+
+export async function cancelVideoUploadAction(
+  mediaId: string,
+): Promise<VideoUploadCompletionResult> {
+  const context = await getActionContext();
+
+  if (!isMediaUuid(mediaId) || !canEditDrafts(context.role)) {
+    return { success: false, message: GENERIC_PERMISSION_ERROR };
+  }
+
+  const item = await getStaffVideoItem(context.supabase, mediaId);
+
+  if (
+    !item ||
+    item.status !== "draft" ||
+    !item.storagePath ||
+    (context.role === "editor" && item.videoUploadCompletedAt !== null)
+  ) {
+    return {
+      success: false,
+      message:
+        "This upload can no longer be cancelled from the upload page.",
+    };
+  }
+
+  const { data: objectExists, error: existsError } =
+    await context.supabase.storage
+      .from(VIDEO_BUCKET)
+      .exists(item.storagePath);
+
+  if (existsError) {
+    return {
+      success: false,
+      message:
+        "The upload was stopped, but Storage cleanup could not be verified. The draft remains private for administrator review.",
+    };
+  }
+
+  if (objectExists) {
+    const { error: removeError } = await context.supabase.storage
+      .from(VIDEO_BUCKET)
+      .remove([item.storagePath]);
+
+    if (removeError) {
+      return {
+        success: false,
+        message:
+          "The upload was stopped, but its private object could not be removed. The draft remains private for administrator review.",
+      };
+    }
+  }
+
+  const { data, error } = await context.supabase
+    .from("media_items")
+    .update({
+      storage_path: null,
+      video_upload_completed_at: null,
+    })
+    .eq("id", item.id)
+    .eq("status", "draft")
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    return {
+      success: false,
+      message:
+        "The private upload was removed, but the incomplete draft needs administrator review.",
+    };
+  }
+
+  revalidatePath("/staff/media");
+
+  return {
+    success: true,
+    message:
+      "Upload cancelled. No video was published; an incomplete private draft remains for review.",
+  };
+}
+
 export async function updateMediaItemAction(
   id: string,
   _previousState: MediaActionState,
@@ -386,9 +718,13 @@ export async function updateMediaItemAction(
     return { message: GENERIC_SAVE_ERROR };
   }
 
-  const item = await getStaffMediaItem(context.supabase, id);
+  const initialItem = await getStaffMediaItem(context.supabase, id);
+  const item =
+    initialItem?.mediaType === "video"
+      ? await getStaffVideoItem(context.supabase, id)
+      : initialItem;
 
-  if (!item || !item.albumId) {
+  if (!item) {
     return { message: GENERIC_SAVE_ERROR };
   }
 
@@ -402,14 +738,27 @@ export async function updateMediaItemAction(
   if (intent === "publish") {
     if (
       context.role !== "admin" ||
-      item.mediaType !== "image" ||
       !item.storagePath
     ) {
       return { message: GENERIC_PERMISSION_ERROR };
     }
+
+    if (
+      item.mediaType === "video" &&
+      (!item.videoUploadCompletedAt ||
+        !(await verifyStoredVideoObject(
+          context.supabase,
+          item.storagePath,
+        )))
+    ) {
+      return {
+        message:
+          "The completed MP4/WebM object must be verified before publication.",
+      };
+    }
   }
 
-  const validation = validateMediaItemForm(formData);
+  const validation = validateMediaItemForm(formData, item.mediaType);
 
   if (!validation.success) {
     return {
@@ -437,14 +786,22 @@ export async function updateMediaItemAction(
     return { message: GENERIC_SAVE_ERROR };
   }
 
-  const album = await getStaffAlbum(context.supabase, item.albumId);
+  const album = item.albumId
+    ? await getStaffAlbum(context.supabase, item.albumId)
+    : null;
   revalidateMediaPaths(album?.slug);
   revalidatePath(`/staff/media/items/${id}/edit`);
-  revalidatePath(`/staff/media/albums/${item.albumId}/edit`);
+
+  if (item.albumId) {
+    revalidatePath(`/staff/media/albums/${item.albumId}/edit`);
+  }
+
+  const itemLabel = item.mediaType === "video" ? "video" : "photo";
   redirect(
-    intent === "publish"
-      ? `/staff/media/albums/${item.albumId}/edit?notice=photo-published`
-      : `/staff/media/albums/${item.albumId}/edit?notice=photo-updated`,
+    appendNotice(
+      mediaItemDestination(item),
+      `${itemLabel}-${intent === "publish" ? "published" : "updated"}`,
+    ),
   );
 }
 
@@ -461,9 +818,13 @@ export async function archiveMediaItemAction(
     return { message: GENERIC_PERMISSION_ERROR };
   }
 
-  const item = await getStaffMediaItem(context.supabase, id);
+  const initialItem = await getStaffMediaItem(context.supabase, id);
+  const item =
+    initialItem?.mediaType === "video"
+      ? await getStaffVideoItem(context.supabase, id)
+      : initialItem;
 
-  if (!item || !item.albumId) {
+  if (!item) {
     return { message: GENERIC_SAVE_ERROR };
   }
 
@@ -478,10 +839,15 @@ export async function archiveMediaItemAction(
     return { message: GENERIC_SAVE_ERROR };
   }
 
-  const album = await getStaffAlbum(context.supabase, item.albumId);
+  const album = item.albumId
+    ? await getStaffAlbum(context.supabase, item.albumId)
+    : null;
   revalidateMediaPaths(album?.slug);
   redirect(
-    `/staff/media/albums/${item.albumId}/edit?notice=photo-archived`,
+    appendNotice(
+      mediaItemDestination(item),
+      `${item.mediaType === "video" ? "video" : "photo"}-archived`,
+    ),
   );
 }
 
@@ -498,9 +864,13 @@ export async function deleteMediaItemAction(
     return { message: GENERIC_PERMISSION_ERROR };
   }
 
-  const item = await getStaffMediaItem(context.supabase, id);
+  const initialItem = await getStaffMediaItem(context.supabase, id);
+  const item =
+    initialItem?.mediaType === "video"
+      ? await getStaffVideoItem(context.supabase, id)
+      : initialItem;
 
-  if (!item || !item.albumId) {
+  if (!item) {
     return { message: GENERIC_SAVE_ERROR };
   }
 
@@ -518,7 +888,7 @@ export async function deleteMediaItemAction(
 
   if (item.storagePath) {
     const { error: storageError } = await context.supabase.storage
-      .from(MEDIA_BUCKET)
+      .from(item.mediaType === "video" ? VIDEO_BUCKET : MEDIA_BUCKET)
       .remove([item.storagePath]);
 
     if (storageError) {
@@ -528,9 +898,16 @@ export async function deleteMediaItemAction(
       };
     }
 
+    const clearValues =
+      item.mediaType === "video"
+        ? {
+            storage_path: null,
+            video_upload_completed_at: null,
+          }
+        : { storage_path: null };
     const { data: cleared, error: clearError } = await context.supabase
       .from("media_items")
-      .update({ storage_path: null })
+      .update(clearValues)
       .eq("id", id)
       .select("id")
       .maybeSingle();
@@ -557,10 +934,19 @@ export async function deleteMediaItemAction(
     };
   }
 
-  const album = await getStaffAlbum(context.supabase, item.albumId);
+  const album = item.albumId
+    ? await getStaffAlbum(context.supabase, item.albumId)
+    : null;
   revalidateMediaPaths(album?.slug);
-  revalidatePath(`/staff/media/albums/${item.albumId}/edit`);
+
+  if (item.albumId) {
+    revalidatePath(`/staff/media/albums/${item.albumId}/edit`);
+  }
+
   redirect(
-    `/staff/media/albums/${item.albumId}/edit?notice=photo-deleted`,
+    appendNotice(
+      mediaItemDestination(item),
+      `${item.mediaType === "video" ? "video" : "photo"}-deleted`,
+    ),
   );
 }

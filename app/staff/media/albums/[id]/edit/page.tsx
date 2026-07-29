@@ -34,6 +34,10 @@ const notices: Record<string, string> = {
   "photo-published": "The photo was published.",
   "photo-updated": "The photo details were saved.",
   "photo-uploaded": "The photo was uploaded as a draft.",
+  "video-archived": "The video was archived.",
+  "video-deleted": "The video and its private file were deleted.",
+  "video-published": "The video was published.",
+  "video-updated": "The video details were saved.",
 };
 
 export default async function EditAlbumPage({
@@ -185,7 +189,7 @@ export default async function EditAlbumPage({
                     id="album-photos-heading"
                     className="mt-2 font-display text-3xl font-bold text-navy-900"
                   >
-                    Photos
+                    Album media
                   </h2>
                 </div>
                 {canAddPhoto ? (
@@ -231,7 +235,7 @@ export default async function EditAlbumPage({
                             <span className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
                               {item.mediaType === "image"
                                 ? "Photo"
-                                : "Video metadata"}
+                                : "Video"}
                             </span>
                           </div>
                           <h3 className="mt-3 font-display text-xl font-bold text-navy-900">
