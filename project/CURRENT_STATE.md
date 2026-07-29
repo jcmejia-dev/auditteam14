@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-29
 
-Working branch: `feature/announcements-management`
+Working branch: `feature/activities-management`
 
 ## Implemented
 
@@ -49,6 +49,14 @@ Working branch: `feature/announcements-management`
   available.
 - No production announcement rows were created or modified during automated
   validation.
+- Role-aware activity management is implemented locally with staff list,
+  create, edit, publish, archive, and delete interfaces enforced through the
+  publishable-key SSR client and existing activity RLS policies.
+- The public homepage reads published activities through the anonymous RLS
+  policy and displays approved title, summary, activity date, and general
+  location fields only.
+- No production activity rows were created or modified during automated
+  validation.
 
 ## Repository state
 
@@ -60,8 +68,8 @@ Working branch: `feature/announcements-management`
 ## Not implemented
 
 - Confirmed public phone, email, exact street address, and published media content.
-- Staff management for activities, team members, jurisdictions, media, roles,
-  password reset, and account-registration workflows.
+- Staff management for team members, jurisdictions, media, roles, password
+  reset, and account-registration workflows.
 - Supabase Storage buckets, upload policies, jurisdiction records, media,
   public content, or application data access.
 - Vercel project or deployment configuration.
@@ -104,8 +112,8 @@ No chief officers, accountants, or other personal information is included.
 
 Review and apply the caller-only role helper migration through the approved
 database process if it is not yet deployed, then manually validate staff
-authentication and announcement permissions with disposable admin, editor, and
-viewer test accounts.
+authentication, announcement permissions, and activity permissions with
+disposable admin, editor, and viewer test accounts.
 
 ## Proposed next steps — require task approval
 
@@ -115,7 +123,9 @@ viewer test accounts.
    credentials.
 3. Privately test the announcement draft, publish, archive, and delete workflow
    against the deployed RLS policies without using production content.
-4. Keep Storage and uploads deferred until the documented dependency and
+4. Privately test the activity draft, publish, archive, and delete workflow
+   against the deployed RLS policies without using production content.
+5. Keep Storage and uploads deferred until the documented dependency and
    security gates are resolved.
 
 Update this file whenever implemented capabilities, integrations, or immediate next steps materially change.

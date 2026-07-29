@@ -19,8 +19,9 @@ const quickActions = [
   },
   {
     title: "Add Activity",
-    description: "Record an approved team activity when content tools are ready.",
+    description: "Create an approved public activity draft for review.",
     icon: "activity",
+    href: "/staff/activities/new",
   },
   {
     title: "Manage Team",
@@ -106,12 +107,20 @@ export default async function StaffDashboardPage() {
                 Quick actions
               </h2>
             </div>
-            <Link
-              href="/staff/announcements"
-              className="inline-flex min-h-11 items-center font-bold text-teal-700 underline decoration-gold-500 decoration-2 underline-offset-4 hover:text-navy-900"
-            >
-              Manage Announcements
-            </Link>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <Link
+                href="/staff/announcements"
+                className="inline-flex min-h-11 items-center font-bold text-teal-700 underline decoration-gold-500 decoration-2 underline-offset-4 hover:text-navy-900"
+              >
+                Manage Announcements
+              </Link>
+              <Link
+                href="/staff/activities"
+                className="inline-flex min-h-11 items-center font-bold text-teal-700 underline decoration-gold-500 decoration-2 underline-offset-4 hover:text-navy-900"
+              >
+                Manage Activities
+              </Link>
+            </div>
           </div>
 
           <div className="mt-7 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -125,7 +134,9 @@ export default async function StaffDashboardPage() {
                     : undefined
                 }
                 statusLabel={
-                  action.icon === "announcement" && role === "viewer"
+                  (action.icon === "announcement" ||
+                    action.icon === "activity") &&
+                  role === "viewer"
                     ? "Read-only role"
                     : undefined
                 }
