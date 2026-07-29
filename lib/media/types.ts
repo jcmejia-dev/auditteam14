@@ -26,7 +26,9 @@ export type MediaItemRecord = {
   title: string;
   altText: string | null;
   caption: string | null;
+  eventDate: string | null;
   storagePath: string | null;
+  videoUploadCompletedAt: string | null;
   status: MediaPublicationStatus;
   publishedAt: string | null;
   displayOrder: number;
@@ -45,6 +47,7 @@ export type MediaItemFormValues = {
   title: string;
   altText: string;
   caption: string;
+  eventDate: string;
   displayOrder: number;
 };
 
@@ -70,6 +73,15 @@ export type PublicPhotoAlbumDetail = Omit<
   "photoCount" | "coverSrc"
 > & {
   photos: PublicPhoto[];
+};
+
+export type PublicVideo = {
+  title: string;
+  accessibleDescription: string;
+  caption: string | null;
+  eventDate: string | null;
+  publishedAt: string | null;
+  playbackUrl: string;
 };
 
 export function isMediaUuid(value: string) {

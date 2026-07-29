@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { MediaStatusBadge } from "@/components/staff/media-status-badge";
 import { StaffPortalHeader } from "@/components/staff/staff-portal-header";
 import { getStaffContext, type StaffRole } from "@/lib/auth/staff";
-import { getStaffAlbums } from "@/lib/media/data";
+import { getStaffAlbums, getStaffVideos } from "@/lib/media/data";
 
 export const metadata: Metadata = {
   title: "Manage Media",
@@ -23,6 +23,10 @@ const notices: Record<string, string> = {
   "album-deleted": "The album was permanently deleted.",
   "album-published": "The album was published.",
   "album-updated": "The album changes were saved.",
+  "video-archived": "The video was archived.",
+  "video-deleted": "The video and its private file were deleted.",
+  "video-published": "The video was published.",
+  "video-updated": "The video details were saved.",
 };
 
 export default async function StaffMediaPage({
@@ -40,7 +44,13 @@ export default async function StaffMediaPage({
     redirect("/staff/access-denied");
   }
 
-  const { albums, error } = await getStaffAlbums(supabase);
+  const [
+    { albums, error: albumsError },
+    { videos, error: videosError },
+  ] = await Promise.all([
+    getStaffAlbums(supabase),
+    getStaffVideos(supabase),
+  ]);
   const requestedNotice = (await searchParams).notice;
   const noticeKey =
     typeof requestedNotice === "string" ? requestedNotice : undefined;
@@ -77,17 +87,25 @@ export default async function StaffMediaPage({
                 Media Gallery
               </h1>
               <p className="mt-3 max-w-2xl text-lg leading-8 text-slate-600">
-                Organize approved photographs into albums and review their
-                publication status.
+                Organize approved photo albums and direct video drafts, then
+                review their publication status.
               </p>
             </div>
             {canCreate ? (
-              <Link
-                href="/staff/media/albums/new"
-                className="inline-flex min-h-12 items-center justify-center rounded-sm bg-teal-700 px-6 py-3 font-bold text-white shadow-sm hover:bg-navy-900"
-              >
-                Create Album
-              </Link>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/staff/media/videos/new"
+                  className="inline-flex min-h-12 items-center justify-center rounded-sm bg-gold-500 px-6 py-3 font-bold text-navy-950 shadow-sm hover:bg-gold-600 hover:text-white"
+                >
+                  Add Video
+                </Link>
+                <Link
+                  href="/staff/media/albums/new"
+                  className="inline-flex min-h-12 items-center justify-center rounded-sm bg-teal-700 px-6 py-3 font-bold text-white shadow-sm hover:bg-navy-900"
+                >
+                  Create Album
+                </Link>
+              </div>
             ) : (
               <span className="inline-flex min-h-11 items-center rounded-full border border-navy-900/15 bg-white px-5 py-2 font-bold text-navy-700">
                 Read-only access
@@ -104,7 +122,7 @@ export default async function StaffMediaPage({
             </p>
           ) : null}
 
-          {error ? (
+          {albumsError ? (
             <div
               role="alert"
               className="mt-7 border-l-4 border-patriot-red bg-red-50 px-5 py-5"
@@ -167,6 +185,93 @@ export default async function StaffMediaPage({
               })}
             </div>
           )}
+
+          <section
+            aria-labelledby="staff-videos-heading"
+            className="mt-12 border-t border-navy-900/10 pt-9"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold-600">
+                  Direct uploads
+                </p>
+                <h2
+                  id="staff-videos-heading"
+                  className="mt-2 font-display text-3xl font-bold text-navy-900"
+                >
+                  Videos
+                </h2>
+              </div>
+              {canCreate ? (
+                <Link
+                  href="/staff/media/videos/new"
+                  className="inline-flex min-h-12 items-center justify-center rounded-sm border border-teal-700 px-5 py-3 font-bold text-teal-700 hover:bg-teal-100"
+                >
+                  Add Video
+                </Link>
+              ) : null}
+            </div>
+
+            {videosError ? (
+              <p
+                role="alert"
+                className="mt-6 border-l-4 border-patriot-red bg-red-50 px-5 py-4 font-semibold text-navy-900"
+              >
+                Video records are temporarily unavailable.
+              </p>
+            ) : videos.length === 0 ? (
+              <div className="mt-6 border border-navy-900/10 bg-white px-6 py-9 text-center">
+                <h3 className="font-display text-2xl font-bold text-navy-900">
+                  No video drafts yet
+                </h3>
+                <p className="mx-auto mt-2 max-w-xl leading-7 text-slate-600">
+                  Published and draft video records will be organized here.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 grid gap-4">
+                {videos.map((video) => {
+                  const canEdit =
+                    access.staff.role === "admin" ||
+                    (access.staff.role === "editor" &&
+                      video.status === "draft");
+
+                  return (
+                    <article
+                      key={video.id}
+                      className="flex min-w-0 flex-col gap-4 border border-navy-900/10 bg-white p-5 shadow-[0_12px_30px_rgba(16,42,67,0.05)] sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <MediaStatusBadge status={video.status} />
+                          <span className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+                            {video.videoUploadCompletedAt
+                              ? "Upload verified"
+                              : "Upload incomplete"}
+                          </span>
+                        </div>
+                        <h3 className="mt-3 break-words font-display text-xl font-bold text-navy-900">
+                          {video.title}
+                        </h3>
+                        <p className="mt-2 text-sm text-slate-600">
+                          Order {video.displayOrder}
+                          {video.eventDate
+                            ? ` - Event ${video.eventDate}`
+                            : ""}
+                        </p>
+                      </div>
+                      <Link
+                        href={`/staff/media/items/${video.id}/edit`}
+                        className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-sm border border-navy-900/20 px-5 py-3 font-bold text-navy-900 hover:bg-navy-900 hover:text-white"
+                      >
+                        {canEdit ? "Manage Video" : "View Video"}
+                      </Link>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
         </section>
       </main>
     </div>

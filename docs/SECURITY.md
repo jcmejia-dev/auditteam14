@@ -112,6 +112,42 @@ verified, the application keeps the upload form disabled.
   record, then removes the object, clears its path, and finally deletes the
   row so partial failure remains recoverable.
 
+### Direct video upload controls
+
+- Accept only MP4 (`video/mp4`) and WebM (`video/webm`), with an exact maximum
+  of 52,428,800 bytes (50 MB). Recommend MP4 with H.264 video and AAC audio
+  without claiming that every MP4/WebM codec works in every browser.
+- The browser checks extension, declared MIME type, size, and recognizable
+  MP4/WebM signature before reserving a draft. The private bucket independently
+  enforces MIME and size; its INSERT policy independently enforces the exact
+  server-reserved opaque path, caller-owned draft row, active role, media type, and
+  permitted album state. Client checks are never authorization.
+- Video bytes travel directly from the authenticated browser to the Supabase
+  TUS endpoint on the direct Storage hostname. They must never pass through a
+  Server Action, Route Handler, Server Component, Proxy, or Vercel Function.
+- The browser obtains the active access token only to authenticate the Storage
+  transfer. Never log or persist the token, and never log the original
+  filename, file contents, signed playback URL, or TUS URL. Upload recovery is
+  kept in page memory, so staff are instructed to keep the page open.
+- Never send `x-upsert=true`. Use a new opaque path for every reservation and
+  define no `storage.objects` UPDATE policy.
+- Failed, cancelled, and interrupted uploads remain private drafts and can
+  never satisfy the database publication constraint. Finalization rechecks the
+  completed object metadata before recording completion.
+- Do not use FFmpeg, Sharp, transcoding, conversion, thumbnail extraction, or
+  server-side video processing. Reject AVI, MKV, WMV, MPEG transport streams,
+  executable, HTML, SVG, GIF, image, and unknown inputs.
+- Keep the video bucket private. Public playback uses short-lived signed URLs
+  created only after anonymous RLS confirms published metadata. Staff draft
+  previews require an active staff role. Signed URLs must not be publicly
+  cached.
+- Native playback uses controls, no autoplay, metadata-only preload, and
+  mobile inline playback. Direct Storage delivery preserves Range requests and
+  seeking without Vercel response limits.
+- Apply and test the video migration only through the reviewed database
+  process. Until it is applied and verified, the Add Video page remains in a
+  disabled readiness state.
+
 ## Staff authentication
 
 - Staff email/password authentication uses the Supabase SSR server client and a

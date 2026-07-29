@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-29
 
-Working branch: `feature/media-gallery`
+Working branch: `feature/direct-video-uploads`
 
 ## Implemented
 
@@ -107,12 +107,30 @@ Working branch: `feature/media-gallery`
   form remains disabled unless a read-only readiness check confirms that the
   bucket and staff policies are available.
 - Image uploads are validated by declared MIME type, extension, size, and file
-  signature and are never processed with Sharp. Video-file uploads, arbitrary
-  URLs, HTML, iframe code, and external video publishing remain disabled.
-- The existing album schema has no event-date field, so gallery dates are
-  labeled as publication dates. The media schema has no allowlisted external
-  video provider/source fields; this requires a separately reviewed schema
-  decision before videos can be published safely.
+  signature and are never processed with Sharp. Arbitrary media URLs, HTML,
+  iframe code, and external video publishing remain disabled.
+- The album schema has no event-date field, so photo album dates remain labeled
+  as publication dates. The new review-only video migration adds an optional
+  event date to individual media items. External providers, arbitrary URLs,
+  iframe code, and embed HTML remain unsupported.
+- Secure direct video uploads are implemented locally with
+  `tus-js-client@4.3.1`. Authenticated administrators and editors can choose an
+  MP4/WebM file, enter approved metadata, optionally associate a permitted
+  album, and transfer the bytes directly from the browser to the Supabase TUS
+  endpoint with progress, retry, cancellation, and completion verification.
+- Video bytes never pass through Next.js or Vercel. The browser session token
+  is forwarded only to Supabase Storage; claims and the caller-only role RPC
+  are revalidated for every metadata mutation, and RLS remains the final
+  boundary.
+- A new review-only forward migration adds optional media event dates, a
+  protected video-completion timestamp, and the private
+  `audit-team-14-videos` bucket limited to MP4/WebM and exactly 50 MB. It also
+  defines server-reservation-bound Storage policies and no UPDATE/upsert
+  policy. The migration and its read-only verification SQL have not been
+  executed remotely.
+- Published videos render on the dynamic `/videos` route through the native
+  HTML video player and short-lived signed private-bucket URLs. Draft and
+  archived records remain excluded by database and Storage RLS.
 
 ## Repository state
 
@@ -126,9 +144,9 @@ Working branch: `feature/media-gallery`
 - Confirmed public phone, email, exact street address, and published media content.
 - Staff management for roles, password reset, and account-registration
   workflows.
-- Deployed Supabase Storage buckets or media object policies. The media
-  migration remains review-only, and no jurisdiction or media records were
-  seeded automatically.
+- Deployed Supabase Storage buckets or media object policies. The photo and
+  video migrations remain review-only, and no jurisdiction or media records
+  were seeded automatically.
 - Vercel project or deployment configuration.
 - AI provider or AI feature.
 - Public uploads or other user-supplied media.
@@ -191,5 +209,9 @@ disposable admin, editor, and viewer test accounts.
 8. Review the media Storage migration in a disposable project, confirm
    operation-aware anonymous download policies and all role cases, then obtain
    explicit approval before remote execution.
+9. Review the direct-video migration in a disposable project; verify the exact
+   50 MB MP4/WebM bucket limits, TUS retry/cancel behavior, reservation-bound
+   INSERT policy, no-overwrite behavior, signed playback expiry, Range
+   requests, seeking, and admin/editor/viewer cases before remote execution.
 
 Update this file whenever implemented capabilities, integrations, or immediate next steps materially change.

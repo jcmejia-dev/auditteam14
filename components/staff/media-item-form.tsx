@@ -32,6 +32,7 @@ export function MediaItemForm({
   role,
   status,
   canPublish,
+  mediaType,
 }: {
   action: (
     state: MediaActionState,
@@ -41,6 +42,7 @@ export function MediaItemForm({
   role: StaffRole;
   status: MediaPublicationStatus;
   canPublish: boolean;
+  mediaType: "image" | "video";
 }) {
   const [state, formAction, pending] = useActionState(action, {
     message: null,
@@ -60,7 +62,8 @@ export function MediaItemForm({
       <fieldset disabled={pending} className="space-y-7 disabled:opacity-70">
         <div>
           <label htmlFor="media-title" className="font-bold text-navy-900">
-            Photo title <span className="text-patriot-red">*</span>
+            {mediaType === "video" ? "Video title" : "Photo title"}{" "}
+            <span className="text-patriot-red">*</span>
           </label>
           <input
             id="media-title"
@@ -80,7 +83,10 @@ export function MediaItemForm({
 
         <div>
           <label htmlFor="media-alt-text" className="font-bold text-navy-900">
-            Image description <span className="text-patriot-red">*</span>
+            {mediaType === "video"
+              ? "Accessible description"
+              : "Image description"}{" "}
+            <span className="text-patriot-red">*</span>
           </label>
           <textarea
             id="media-alt-text"
@@ -97,7 +103,9 @@ export function MediaItemForm({
             message={state.itemFieldErrors?.altText}
           />
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Briefly describe what is visible for people using screen readers.
+            {mediaType === "video"
+              ? "Briefly describe the video for people who cannot see or hear all of it."
+              : "Briefly describe what is visible for people using screen readers."}
           </p>
         </div>
 
@@ -123,6 +131,33 @@ export function MediaItemForm({
             include confidential information.
           </p>
         </div>
+
+        {mediaType === "video" ? (
+          <div className="max-w-sm">
+            <label
+              htmlFor="media-event-date"
+              className="font-bold text-navy-900"
+            >
+              Event date
+            </label>
+            <input
+              id="media-event-date"
+              name="eventDate"
+              type="date"
+              min="1900-01-01"
+              defaultValue={initialValues.eventDate}
+              aria-invalid={Boolean(state.itemFieldErrors?.eventDate)}
+              className={inputClass}
+            />
+            <FieldError
+              id="media-event-date-error"
+              message={state.itemFieldErrors?.eventDate}
+            />
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Optional. Use the date of the approved event shown in the video.
+            </p>
+          </div>
+        ) : null}
 
         <div className="max-w-xs">
           <label
@@ -174,8 +209,8 @@ export function MediaItemForm({
               {pending
                 ? "Saving…"
                 : status === "published"
-                  ? "Update Published Photo"
-                  : "Publish Photo"}
+                  ? `Update Published ${mediaType === "video" ? "Video" : "Photo"}`
+                  : `Publish ${mediaType === "video" ? "Video" : "Photo"}`}
             </button>
           ) : null}
         </div>
