@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { QuickActionCard } from "@/components/staff/quick-action-card";
@@ -12,8 +13,9 @@ export const metadata: Metadata = {
 const quickActions = [
   {
     title: "Add Announcement",
-    description: "Prepare a public announcement for a future review workflow.",
+    description: "Create a public announcement draft for review and approval.",
     icon: "announcement",
+    href: "/staff/announcements/new",
   },
   {
     title: "Add Activity",
@@ -79,8 +81,9 @@ export default async function StaffDashboardPage() {
             Welcome, {displayName}
           </h1>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
-            Your secure workspace is ready. Content tools below are clearly
-            marked as upcoming and cannot make changes yet.
+            Your secure workspace provides role-based access to approved
+            content tools. Features still in development are marked as
+            upcoming.
           </p>
           <div className="mt-6 inline-flex min-h-11 items-center rounded-full border border-teal-700/20 bg-teal-100 px-5 py-2 font-bold text-teal-700">
             Active role: {roleLabels[role]}
@@ -103,14 +106,30 @@ export default async function StaffDashboardPage() {
                 Quick actions
               </h2>
             </div>
-            <p className="text-sm font-semibold text-slate-600">
-              All actions are currently view-only previews.
-            </p>
+            <Link
+              href="/staff/announcements"
+              className="inline-flex min-h-11 items-center font-bold text-teal-700 underline decoration-gold-500 decoration-2 underline-offset-4 hover:text-navy-900"
+            >
+              Manage Announcements
+            </Link>
           </div>
 
           <div className="mt-7 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {quickActions.map((action) => (
-              <QuickActionCard key={action.title} {...action} />
+              <QuickActionCard
+                key={action.title}
+                {...action}
+                href={
+                  "href" in action && role !== "viewer"
+                    ? action.href
+                    : undefined
+                }
+                statusLabel={
+                  action.icon === "announcement" && role === "viewer"
+                    ? "Read-only role"
+                    : undefined
+                }
+              />
             ))}
           </div>
         </section>

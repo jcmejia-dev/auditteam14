@@ -68,6 +68,13 @@ export async function resolveStaffAccess(
 }
 
 export async function getStaffAccess() {
+  const { access } = await getStaffContext();
+  return access;
+}
+
+export async function getStaffContext() {
   const supabase = await createClient();
-  return resolveStaffAccess(supabase);
+  const access = await resolveStaffAccess(supabase);
+
+  return { access, supabase };
 }
