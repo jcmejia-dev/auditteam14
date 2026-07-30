@@ -41,6 +41,14 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  icons: {
+    icon: {
+      url: "/COA.png",
+      type: "image/png",
+    },
+    shortcut: "/COA.png",
+    apple: "/COA.png",
+  },
 };
 
 export default function RootLayout({

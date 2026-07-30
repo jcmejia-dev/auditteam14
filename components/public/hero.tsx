@@ -7,6 +7,20 @@ import { BrandMark } from "./brand-mark";
 export function Hero() {
   return (
     <section id="home" className="hero-field bg-navy-950 text-white">
+      <div className="absolute inset-0 -z-20" aria-hidden="true">
+        <Image
+          src="/hero-institutional-bg.png"
+          alt=""
+          fill
+          sizes="100vw"
+          preload
+          className="hero-background-image object-cover"
+        />
+      </div>
+      <div
+        className="hero-background-overlay absolute inset-0 -z-10"
+        aria-hidden="true"
+      />
       <div className="hero-flag-watermark" aria-hidden="true">
         <span className="flag-sun" />
         <span className="flag-star flag-star-one">★</span>
