@@ -1,26 +1,734 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f4ec;
+  --foreground: #243b53;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-navy-950: #0b1f33;
+  --color-navy-900: #102a43;
+  --color-navy-800: #193b5a;
+  --color-navy-700: #243b53;
+  --color-navy-100: #d9e2ec;
+  --color-royal-700: #244d93;
+  --color-patriot-red: #a62b35;
+  --color-teal-700: #315f5e;
+  --color-teal-600: #3f7775;
+  --color-teal-100: #dcebea;
+  --color-gold-600: #a97e30;
+  --color-gold-500: #c39a4a;
+  --color-gold-200: #ead9b7;
+  --color-cream: #f7f4ec;
+  --color-cream-dark: #ede8dc;
+  --color-ink: #344054;
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: Georgia, "Times New Roman", serif;
+  --shadow-soft: 0 24px 60px rgba(16, 42, 67, 0.12);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #ead9b7;
+  color: #102a43;
+}
+
+a,
+button,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid #c39a4a;
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  max-width: calc(100vw - 2rem);
+  padding: 0.75rem 1rem;
+  border-radius: 0.125rem;
+  background: #102a43;
+  box-shadow: 0 10px 28px rgba(11, 31, 51, 0.28);
+  color: #ffffff;
+  font-weight: 700;
+  transform: translateY(calc(-100% - 2rem));
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  outline: 3px solid #c39a4a;
+  outline-offset: 3px;
+  transform: translateY(0);
+}
+
+section[id] {
+  scroll-margin-top: 6rem;
+}
+
+.page-shell {
+  width: min(100% - 2rem, 76rem);
+  margin-inline: auto;
+}
+
+.hero-field {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.hero-background-image {
+  object-position: 66% center;
+}
+
+.hero-background-overlay {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(7, 22, 39, 0.96) 0%,
+      rgba(8, 27, 49, 0.9) 52%,
+      rgba(10, 33, 59, 0.72) 78%,
+      rgba(10, 35, 62, 0.58) 100%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(6, 20, 36, 0.72) 0%,
+      transparent 42%,
+      rgba(6, 20, 36, 0.18) 100%
+    );
+}
+
+.hero-field::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  content: "";
+  mask-image: linear-gradient(to right, transparent, black 35%, black);
+}
+
+.hero-field::after {
+  position: absolute;
+  right: -12rem;
+  bottom: -18rem;
+  z-index: -1;
+  width: 36rem;
+  height: 36rem;
+  border: 1px solid rgba(195, 154, 74, 0.24);
+  border-radius: 9999px;
+  box-shadow:
+    0 0 0 4rem rgba(195, 154, 74, 0.035),
+    0 0 0 8rem rgba(195, 154, 74, 0.025);
+  content: "";
+}
+
+.hero-flag-watermark {
+  position: absolute;
+  top: 10rem;
+  right: -18rem;
+  z-index: 0;
+  width: 42rem;
+  aspect-ratio: 2 / 1;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #244d93 0 50%, #a62b35 50% 100%);
+  box-shadow: 0 30px 90px rgba(36, 77, 147, 0.16);
+  opacity: 0.06;
+  transform: rotate(-6deg);
+  animation: flag-drift 18s ease-in-out infinite alternate;
+}
+
+.hero-flag-watermark::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 52%;
+  background: #f7f4ec;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  content: "";
+}
+
+.flag-sun {
+  position: absolute;
+  top: 50%;
+  left: 12%;
+  z-index: 1;
+  width: 4rem;
+  height: 4rem;
+  background: repeating-conic-gradient(
+    from 0deg,
+    #c39a4a 0deg 8deg,
+    transparent 8deg 45deg
+  );
+  border-radius: 9999px;
+  transform: translateY(-50%);
+}
+
+.flag-sun::after {
+  position: absolute;
+  inset: 0.85rem;
+  background: #c39a4a;
+  border-radius: inherit;
+  content: "";
+}
+
+.flag-star {
+  position: absolute;
+  z-index: 1;
+  color: #c39a4a;
+  font-size: 2.15rem;
+  line-height: 1;
+}
+
+.flag-star-one {
+  top: 10%;
+  left: 5%;
+}
+
+.flag-star-two {
+  bottom: 10%;
+  left: 5%;
+}
+
+.flag-star-three {
+  top: 44%;
+  left: 39%;
+}
+
+.patriotic-wave {
+  position: relative;
+  z-index: 10;
+  height: 3.5rem;
+  overflow: hidden;
+  background: #f7f4ec;
+}
+
+.patriotic-wave::before,
+.patriotic-wave::after {
+  position: absolute;
+  top: -3.65rem;
+  height: 5.5rem;
+  border-radius: 0 0 50% 50%;
+  content: "";
+}
+
+.patriotic-wave::before {
+  left: -8%;
+  width: 66%;
+  background: #102a43;
+  box-shadow: 0 2px 0 rgba(195, 154, 74, 0.7);
+}
+
+.patriotic-wave::after {
+  right: -10%;
+  width: 62%;
+  background: #244d93;
+  box-shadow: 0 2px 0 rgba(166, 43, 53, 0.55);
+  opacity: 0.42;
+}
+
+.institutional-field {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.institutional-field::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      circle at 82% 18%,
+      rgba(36, 77, 147, 0.085),
+      transparent 30rem
+    ),
+    linear-gradient(120deg, transparent 60%, rgba(195, 154, 74, 0.055));
+  content: "";
+}
+
+.institutional-watermark {
+  position: absolute;
+  top: 4rem;
+  right: -9rem;
+  z-index: 0;
+  width: 27rem;
+  aspect-ratio: 1;
+  border: 1px solid #244d93;
+  border-radius: 9999px;
+  color: #c39a4a;
+  opacity: 0.055;
+}
+
+.institutional-watermark::before,
+.institutional-watermark::after {
+  position: absolute;
+  inset: 16%;
+  border: 1px solid currentColor;
+  border-radius: inherit;
+  content: "";
+}
+
+.institutional-watermark::after {
+  inset: 31%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    currentColor 0deg 5deg,
+    transparent 5deg 45deg
+  );
+  border: 0;
+}
+
+.institutional-watermark > span {
+  position: absolute;
+  inset: 42%;
+  background: currentColor;
+  border-radius: 9999px;
+}
+
+.institutional-card {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  padding: 1.5rem;
+  border-radius: 0.125rem;
+}
+
+.institutional-card::after {
+  position: absolute;
+  right: -4rem;
+  bottom: -5rem;
+  width: 12rem;
+  height: 12rem;
+  border: 1px solid currentColor;
+  border-radius: 9999px;
+  content: "";
+  opacity: 0.08;
+}
+
+.institutional-card-primary {
+  border-top: 4px solid #c39a4a;
+  background:
+    linear-gradient(145deg, rgba(36, 77, 147, 0.18), transparent 46%),
+    #102a43;
+  box-shadow: 0 24px 55px rgba(16, 42, 67, 0.16);
+  color: #ffffff;
+}
+
+.institutional-card-secondary {
+  border: 1px solid rgba(16, 42, 67, 0.12);
+  border-top: 4px solid #3f7775;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 20px 48px rgba(16, 42, 67, 0.08);
+  color: #102a43;
+}
+
+.institutional-wave {
+  position: absolute;
+  right: -8%;
+  bottom: -3.75rem;
+  z-index: 0;
+  width: 72%;
+  height: 7rem;
+  border-radius: 50% 50% 0 0;
+  background: rgba(36, 77, 147, 0.065);
+  box-shadow:
+    -20rem -0.65rem 0 rgba(166, 43, 53, 0.035),
+    0 -2px 0 rgba(195, 154, 74, 0.28);
+  transform: rotate(-2deg);
+}
+
+.media-page-field {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.media-page-field::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      circle at 88% 12%,
+      rgba(36, 77, 147, 0.09),
+      transparent 28rem
+    ),
+    linear-gradient(125deg, transparent 56%, rgba(195, 154, 74, 0.055));
+  content: "";
+}
+
+.media-page-field::after {
+  position: absolute;
+  right: -8rem;
+  bottom: -12rem;
+  z-index: 0;
+  width: 30rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(36, 77, 147, 0.08);
+  border-radius: 9999px;
+  box-shadow:
+    0 0 0 4rem rgba(195, 154, 74, 0.025),
+    0 0 0 8rem rgba(166, 43, 53, 0.018);
+  content: "";
+}
+
+.lock-icon {
+  position: relative;
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.7rem;
+  margin-top: 0.25rem;
+  border: 1.5px solid currentColor;
+  border-radius: 0.12rem;
+}
+
+.lock-icon::before {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  width: 0.5rem;
+  height: 0.45rem;
+  border: 1.5px solid currentColor;
+  border-bottom: 0;
+  border-radius: 0.4rem 0.4rem 0 0;
+  content: "";
+  transform: translateX(-50%);
+}
+
+.jurisdiction-field {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.jurisdiction-field::before {
+  position: absolute;
+  top: 7rem;
+  right: -10rem;
+  z-index: -1;
+  width: 32rem;
+  height: 32rem;
+  background:
+    radial-gradient(circle, rgba(36, 77, 147, 0.09), transparent 62%),
+    radial-gradient(
+      circle at 70% 35%,
+      rgba(166, 43, 53, 0.055),
+      transparent 42%
+    );
+  border: 1px solid rgba(195, 154, 74, 0.18);
+  border-radius: 9999px;
+  content: "";
+}
+
+.sticky-map-frame,
+.jurisdiction-map-shell,
+.jurisdiction-map,
+.jurisdiction-map-loading {
+  min-height: 34rem;
+}
+
+.sticky-map-frame {
+  position: relative;
+}
+
+.jurisdiction-map-shell {
+  position: relative;
+  width: 100%;
+}
+
+.jurisdiction-map {
+  z-index: 0;
+  width: 100%;
+  background: #d9e2ec;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.jurisdiction-marker {
+  --marker-color: #3f7775;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+}
+
+.jurisdiction-marker::before,
+.jurisdiction-marker::after {
+  position: absolute;
+  border-radius: 9999px;
+  content: "";
+}
+
+.jurisdiction-marker::before {
+  inset: 2px;
+  border: 2px solid var(--marker-color);
+  opacity: 0.45;
+  animation: jurisdiction-marker-pulse 2.2s ease-out infinite;
+}
+
+.jurisdiction-marker::after {
+  inset: 7px;
+  border: 3px solid #ffffff;
+  background: var(--marker-color);
+  box-shadow: 0 4px 12px rgba(11, 31, 51, 0.28);
+}
+
+.jurisdiction-marker--office {
+  --marker-color: #c39a4a;
+}
+
+.jurisdiction-marker.is-active {
+  --marker-color: #b42318;
+  z-index: 500 !important;
+}
+
+.jurisdiction-marker.is-active::before {
+  inset: -2px;
+  border-width: 3px;
+  opacity: 0.68;
+}
+
+.jurisdiction-marker:focus-visible {
+  outline: 3px solid #c39a4a;
+  outline-offset: 4px;
+}
+
+.jurisdiction-disclosure-chevron {
+  transition: transform 180ms ease;
+}
+
+details[open] .jurisdiction-disclosure-chevron {
+  transform: rotate(225deg);
+}
+
+.jurisdiction-map-loading {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.38)),
+    linear-gradient(135deg, #d9e2ec, #f7f4ec);
+}
+
+.map-loading-pulse {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid rgba(16, 42, 67, 0.18);
+  border-top-color: #3f7775;
+  border-radius: 9999px;
+  animation: map-loading-spin 1s linear infinite;
+}
+
+.jurisdiction-map-error {
+  position: absolute;
+  inset: auto 1rem 1rem;
+  z-index: 600;
+  padding: 1rem 1.25rem;
+  border-left: 4px solid #a62b35;
+  background: rgba(247, 244, 236, 0.96);
+  box-shadow: 0 12px 30px rgba(16, 42, 67, 0.16);
+}
+
+.jurisdiction-popup {
+  min-width: 13rem;
+  padding: 0.15rem;
+  color: #344054;
+}
+
+.jurisdiction-popup__category {
+  margin: 0;
+  color: #315f5e;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jurisdiction-popup__title {
+  margin: 0.45rem 0 0;
+  color: #102a43;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.jurisdiction-popup__location {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.jurisdiction-popup__contact {
+  margin: 0.5rem 0 0;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(16, 42, 67, 0.1);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.jurisdiction-popup__link {
+  display: inline-block;
+  min-height: 2.5rem;
+  margin-top: 0.75rem;
+  padding-block: 0.55rem;
+  color: #315f5e;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: rgba(195, 154, 74, 0.75);
+  text-underline-offset: 0.2rem;
+}
+
+.leaflet-control-attribution {
+  font-size: 0.68rem;
+}
+
+.leaflet-control-zoom a:focus-visible,
+.leaflet-control-attribution a:focus-visible,
+.jurisdiction-popup__link:focus-visible {
+  outline: 3px solid #c39a4a;
+  outline-offset: 2px;
+}
+
+.mobile-navigation > summary {
+  list-style: none;
+}
+
+.mobile-navigation > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mobile-navigation[open] .menu-line:first-child {
+  transform: translateY(5px) rotate(45deg);
+}
+
+.mobile-navigation[open] .menu-line:last-child {
+  transform: translateY(-5px) rotate(-45deg);
+}
+
+@keyframes flag-drift {
+  from {
+    transform: translate3d(0, 0, 0) rotate(-6deg);
+  }
+
+  to {
+    transform: translate3d(-0.75rem, 0.4rem, 0) rotate(-5deg);
+  }
+}
+
+@keyframes map-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes jurisdiction-marker-pulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.72);
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+@media (max-width: 639px) {
+  .page-shell {
+    width: min(100% - 1.5rem, 76rem);
+  }
+
+  .sticky-map-frame,
+  .jurisdiction-map-shell,
+  .jurisdiction-map,
+  .jurisdiction-map-loading {
+    min-height: 28rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .institutional-card {
+    padding: 2.25rem;
+  }
+
+  .hero-background-image {
+    object-position: right center;
+  }
+
+  .hero-background-overlay {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(7, 22, 39, 0.96) 0%,
+        rgba(8, 27, 49, 0.88) 42%,
+        rgba(10, 33, 59, 0.56) 68%,
+        rgba(10, 35, 62, 0.34) 100%
+      ),
+      linear-gradient(
+        0deg,
+        rgba(6, 20, 36, 0.7) 0%,
+        transparent 44%,
+        rgba(6, 20, 36, 0.12) 100%
+      );
+  }
+
+  .hero-flag-watermark {
+    top: 8rem;
+    right: -4rem;
+    width: min(48rem, 56vw);
+  }
+
+  .sticky-map-frame {
+    position: sticky;
+    top: 7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .jurisdiction-marker::before {
+    animation: none;
+    opacity: 0.35;
+    transform: none;
+  }
 }
