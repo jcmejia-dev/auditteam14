@@ -100,6 +100,27 @@ section[id] {
   overflow: hidden;
 }
 
+.hero-background-image {
+  object-position: 66% center;
+}
+
+.hero-background-overlay {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(7, 22, 39, 0.96) 0%,
+      rgba(8, 27, 49, 0.9) 52%,
+      rgba(10, 33, 59, 0.72) 78%,
+      rgba(10, 35, 62, 0.58) 100%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(6, 20, 36, 0.72) 0%,
+      transparent 42%,
+      rgba(6, 20, 36, 0.18) 100%
+    );
+}
+
 .hero-field::before {
   position: absolute;
   inset: 0;
@@ -613,6 +634,27 @@ section[id] {
 @media (min-width: 1024px) {
   .institutional-card {
     padding: 2.25rem;
+  }
+
+  .hero-background-image {
+    object-position: right center;
+  }
+
+  .hero-background-overlay {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(7, 22, 39, 0.96) 0%,
+        rgba(8, 27, 49, 0.88) 42%,
+        rgba(10, 33, 59, 0.56) 68%,
+        rgba(10, 35, 62, 0.34) 100%
+      ),
+      linear-gradient(
+        0deg,
+        rgba(6, 20, 36, 0.7) 0%,
+        transparent 44%,
+        rgba(6, 20, 36, 0.12) 100%
+      );
   }
 
   .hero-flag-watermark {
