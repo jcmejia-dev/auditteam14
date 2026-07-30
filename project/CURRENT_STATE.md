@@ -1,8 +1,8 @@
 # Current state
 
-Last reviewed: 2026-07-29
+Last reviewed: 2026-07-30
 
-Working branch: `feature/direct-video-uploads`
+Working branch: `feature/hero-background`
 
 ## Implemented
 
@@ -12,7 +12,10 @@ Working branch: `feature/direct-video-uploads`
 - ESLint with Next.js Core Web Vitals and TypeScript rules.
 - A completed first-version public homepage with responsive institutional navigation, hero, about, vision and mission, core values, leadership, media categories, contact, and fully linked footer sections.
 - Official COA and BARMM seals, the Audit Team Leader portrait, and confirmed Cotabato City office location.
-- A completed searchable and filterable Leaflet/OpenStreetMap jurisdiction map with synchronized location cards, markers, popups, directions, reset controls, and OpenStreetMap attribution.
+- A completed searchable and filterable Leaflet/OpenStreetMap jurisdiction map
+  with synchronized expandable location cards, reduced-motion-aware pulsing
+  markers, smooth selection movement, popups, directions, reset controls, and
+  OpenStreetMap attribution.
 - A non-indexed staff authentication experience with email/password sign-in,
   caller-only role verification, an access-denied state, secure sign-out, and a
   protected server-rendered dashboard.
@@ -61,6 +64,10 @@ Working branch: `feature/direct-video-uploads`
   edit, publish, archive, delete, and administrator-only ordering controls
   enforced through the publishable-key SSR client and existing team-member RLS
   policies.
+- When the team table has no visible records, Manage Team presents the
+  approved Audit Team Leader website fallback and lets an administrator or
+  editor open a prefilled editable draft without automatically seeding data.
+  The leadership fallback uses the approved local `Bernard.png` portrait.
 - The public leadership section reads published team-member records in display
   order, renders approved local portraits or initials, and retains the
   established Audit Team Leader presentation when no published records exist.
@@ -70,6 +77,10 @@ Working branch: `feature/direct-video-uploads`
   create, edit, publish, archive, delete, and administrator-only ordering
   controls enforced through the publishable-key SSR client and existing
   jurisdiction RLS policies.
+- A review-only forward migration adds two optional approved public role/name
+  pairs to each jurisdiction. The staff form detects whether those columns and
+  grants are ready, keeps the contact fields disabled until then, and otherwise
+  permits their draft-first management without changing existing RLS.
 - The public jurisdiction section reads published database records in display
   order and passes only safe public fields into the Leaflet map. Database UUIDs,
   actor fields, timestamps, drafts, and archives are not sent to the map.
@@ -89,9 +100,21 @@ Working branch: `feature/direct-video-uploads`
   metadata URL resolution, a documented public site-origin variable, and a
   manual deployment checklist. No Vercel project has been connected or
   deployed.
-- The public institutional overview now presents confirmed organizational and
-  regional details, the current official Commission on Audit Vision, Mission,
-  and seven Core Values. Unconfirmed personnel fields remain omitted.
+- The public institutional overview presents stakeholder-confirmed
+  organizational leadership, regional coverage, six published Core Values,
+  and the approved Vision and Mission wording. The leadership section includes
+  the stakeholder-approved public biography for the Audit Team Leader, and the
+  footer includes the confirmed regional office information.
+- Role-aware Institutional Information management is implemented locally on
+  top of the existing `site_settings` table. Administrators can save or
+  publish the fixed public structure, editors can save drafts only, and viewers
+  receive a read-only view. Public pages retain the approved static content
+  until a published setting exists.
+- Staff forms no longer ask nontechnical users to create URL slugs.
+  Announcements, activities, team members, and albums receive server-generated
+  unique paths on creation, while edits preserve existing paths.
+- The Audit Team Leader and Rotary Club of Cotabato City – South references
+  link to their stakeholder-confirmed public Facebook pages.
 - A public media-gallery experience is implemented locally with published
   photo-album previews on the homepage, dedicated `/photos` and `/videos`
   routes, published photo-album pages, and a keyboard-operable fullscreen
@@ -141,7 +164,7 @@ Working branch: `feature/direct-video-uploads`
 
 ## Not implemented
 
-- Confirmed public phone, email, exact street address, and published media content.
+- Confirmed public phone, email, and published media content.
 - Staff management for roles, password reset, and account-registration
   workflows.
 - Deployed Supabase Storage buckets or media object policies. The photo and
@@ -172,7 +195,10 @@ Storage data was created during deployment.
 
 ## Legacy draft jurisdiction data
 
-All six jurisdiction records currently shown on the map come from the legacy website and require stakeholder confirmation before production. Confirm each institution name, abbreviation, category, general location, coordinates, and inclusion in Audit Team 14's jurisdiction:
+All six jurisdiction records currently shown on the map come from the legacy
+website and require stakeholder confirmation before production database
+publication. Confirm each institution name, abbreviation, category, general
+location, coordinates, and inclusion in Audit Team 14's jurisdiction:
 
 - Buluan District Hospital (BDH): `6.7167, 124.8000`
 - Datu Blah T. Sinsuat District Hospital (DBTSDH): `7.0333, 124.1667`
@@ -181,7 +207,22 @@ All six jurisdiction records currently shown on the map come from the legacy web
 - IPHO – Maguindanao: `7.2167, 124.2472`
 - Bangsamoro Regional Hospital and Medical Center (BRHMC): `7.2000, 124.2500`
 
-No chief officers, accountants, or other personal information is included.
+The website owner approved the following personnel roles and names for public
+display on July 30, 2026. They remain fallback content until the review-only
+jurisdiction-contact migration is approved and equivalent published database
+records are entered through the staff workflow:
+
+- BDH: Medical Center Chief Dr. Rizaldy L. Piang; Accountant Michael
+  Edzraphil, CPA.
+- DBTSDH: Medical Center Chief Dr. Edwin John C. Limjuco; Accountant Kamille
+  Bacas, CPA.
+- DOSDH: Chief of Hospital Dra. Raj Deevah Eileen A. Samama-Sinsuat;
+  Bookkeeper Noreen Tanghal.
+- SUMH: Chief of Hospital Dra. Lourem D. Siocon; Bookkeeper Lyn Eresee.
+- IPHO – Maguindanao: Medical Center Chief Dr. Mohammad Ariff A. Baguindali;
+  Accountant Atty. Abuhalil Alibasa, CPA.
+- BRHMC: Medical Center Chief Dr. Mohammad Ariff A. Baguindali; Accountant
+  Atty. Abuhalil Alibasa, CPA.
 
 ## Confirmed next direction
 

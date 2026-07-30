@@ -362,41 +362,6 @@ section[id] {
   transform: rotate(-2deg);
 }
 
-.values-field {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-
-.values-field::before {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background:
-    linear-gradient(115deg, rgba(36, 77, 147, 0.18), transparent 42%),
-    radial-gradient(
-      circle at 88% 18%,
-      rgba(195, 154, 74, 0.14),
-      transparent 24rem
-    );
-  content: "";
-}
-
-.values-wave {
-  position: absolute;
-  right: -10%;
-  bottom: -4.25rem;
-  z-index: 0;
-  width: 68%;
-  height: 7rem;
-  border-radius: 50% 50% 0 0;
-  background: rgba(247, 244, 236, 0.12);
-  box-shadow:
-    -24rem -0.45rem 0 rgba(36, 77, 147, 0.15),
-    0 -2px 0 rgba(195, 154, 74, 0.4);
-  transform: rotate(-2deg);
-}
-
 .media-page-field {
   position: relative;
   isolation: isolate;
@@ -503,6 +468,63 @@ section[id] {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+.jurisdiction-marker {
+  --marker-color: #3f7775;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+}
+
+.jurisdiction-marker::before,
+.jurisdiction-marker::after {
+  position: absolute;
+  border-radius: 9999px;
+  content: "";
+}
+
+.jurisdiction-marker::before {
+  inset: 2px;
+  border: 2px solid var(--marker-color);
+  opacity: 0.45;
+  animation: jurisdiction-marker-pulse 2.2s ease-out infinite;
+}
+
+.jurisdiction-marker::after {
+  inset: 7px;
+  border: 3px solid #ffffff;
+  background: var(--marker-color);
+  box-shadow: 0 4px 12px rgba(11, 31, 51, 0.28);
+}
+
+.jurisdiction-marker--office {
+  --marker-color: #c39a4a;
+}
+
+.jurisdiction-marker.is-active {
+  --marker-color: #b42318;
+  z-index: 500 !important;
+}
+
+.jurisdiction-marker.is-active::before {
+  inset: -2px;
+  border-width: 3px;
+  opacity: 0.68;
+}
+
+.jurisdiction-marker:focus-visible {
+  outline: 3px solid #c39a4a;
+  outline-offset: 4px;
+}
+
+.jurisdiction-disclosure-chevron {
+  transition: transform 180ms ease;
+}
+
+details[open] .jurisdiction-disclosure-chevron {
+  transform: rotate(225deg);
+}
+
 .jurisdiction-map-loading {
   display: grid;
   place-content: center;
@@ -562,6 +584,14 @@ section[id] {
   line-height: 1.5;
 }
 
+.jurisdiction-popup__contact {
+  margin: 0.5rem 0 0;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(16, 42, 67, 0.1);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
 .jurisdiction-popup__link {
   display: inline-block;
   min-height: 2.5rem;
@@ -615,6 +645,19 @@ section[id] {
 @keyframes map-loading-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes jurisdiction-marker-pulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.72);
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
   }
 }
 
@@ -681,5 +724,11 @@ section[id] {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .jurisdiction-marker::before {
+    animation: none;
+    opacity: 0.35;
+    transform: none;
   }
 }
