@@ -3,7 +3,14 @@ import Link from "next/link";
 type QuickActionCardProps = {
   title: string;
   description: string;
-  icon: "announcement" | "activity" | "team" | "map" | "media" | "history";
+  icon:
+    | "announcement"
+    | "activity"
+    | "information"
+    | "team"
+    | "map"
+    | "media"
+    | "history";
   href?: string;
   statusLabel?: string;
 };
@@ -21,6 +28,12 @@ function QuickActionIcon({ icon }: Pick<QuickActionCardProps, "icon">) {
         <path d="M6 3v3M18 3v3M4 9h16" />
         <rect x="4" y="5" width="16" height="15" rx="2" />
         <path d="m8 14 2 2 5-5" />
+      </>
+    ),
+    information: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v6M12 7h.01" />
       </>
     ),
     team: (

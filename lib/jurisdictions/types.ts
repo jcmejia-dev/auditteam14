@@ -20,6 +20,10 @@ export type JurisdictionRecord = {
   generalLocation: string;
   latitude: number | null;
   longitude: number | null;
+  primaryContactRole: string | null;
+  primaryContactName: string | null;
+  secondaryContactRole: string | null;
+  secondaryContactName: string | null;
   status: JurisdictionPublicationStatus;
   publishedAt: string | null;
   displayOrder: number;
@@ -34,6 +38,10 @@ export type JurisdictionFormValues = {
   generalLocation: string;
   latitude: string;
   longitude: string;
+  primaryContactRole: string;
+  primaryContactName: string;
+  secondaryContactRole: string;
+  secondaryContactName: string;
   displayOrder: number;
 };
 

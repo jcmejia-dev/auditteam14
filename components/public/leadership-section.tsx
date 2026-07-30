@@ -15,7 +15,7 @@ function LeadershipFallback() {
           className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden bg-navy-900"
         >
           <Image
-            src="/logo2.png"
+            src="/Bernard.png"
             alt="Bernard R. Sero, Audit Team Leader"
             fill
             sizes="(min-width: 1024px) 384px, (min-width: 640px) 384px, calc(100vw - 3rem)"
@@ -33,15 +33,28 @@ function LeadershipFallback() {
             title="Service with clear responsibility"
           />
           <div className="mt-10 border-t border-navy-900/15 pt-8">
-            <p className="font-display text-3xl font-bold text-navy-900 sm:text-4xl">
+            <a
+              href={siteContent.leadership.facebookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block rounded-sm font-display text-3xl font-bold text-navy-900 underline decoration-gold-500/50 decoration-2 underline-offset-4 hover:text-teal-700 sm:text-4xl"
+              aria-label={`${siteContent.leadership.name} on Facebook (opens in a new tab)`}
+            >
               {siteContent.leadership.name}
-            </p>
+            </a>
             <p className="mt-3 text-sm font-bold uppercase tracking-[0.18em] text-teal-700">
               {siteContent.leadership.role}
             </p>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-ink">
-              {siteContent.leadership.description}
-            </p>
+            <div className="mt-7 space-y-4">
+              {siteContent.leadership.biography.map((paragraph) => (
+                <p
+                  key={paragraph}
+                  className="border-l-2 border-teal-700 bg-white/65 px-5 py-4 leading-7 text-ink shadow-[0_8px_24px_rgba(16,42,67,0.04)]"
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
       </div>

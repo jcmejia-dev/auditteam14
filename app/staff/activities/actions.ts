@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { getStaffActivity } from "@/lib/activities/data";
 import { isActivityUuid } from "@/lib/activities/types";
+import { createContentSlug } from "@/lib/content/slug";
 import {
   type ActivityFieldErrors,
   validateActivityForm,
@@ -44,7 +45,7 @@ function isEditorOrAdmin(role: StaffRole) {
 
 function databaseErrorMessage(code: string | undefined) {
   if (code === "23505") {
-    return "That web address name is already in use. Choose another slug.";
+    return "A matching activity already exists. Please try again.";
   }
 
   return GENERIC_SAVE_ERROR;
@@ -69,7 +70,10 @@ export async function createActivityAction(
     return { message: GENERIC_PERMISSION_ERROR };
   }
 
-  const validation = validateActivityForm(formData);
+  const validation = validateActivityForm(
+    formData,
+    createContentSlug(formData.get("title")),
+  );
 
   if (!validation.success) {
     return {
@@ -141,7 +145,7 @@ export async function updateActivityAction(
     return { message: GENERIC_PERMISSION_ERROR };
   }
 
-  const validation = validateActivityForm(formData);
+  const validation = validateActivityForm(formData, existing.slug);
 
   if (!validation.success) {
     return {

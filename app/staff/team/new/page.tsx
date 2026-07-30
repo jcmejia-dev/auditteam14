@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { StaffPortalHeader } from "@/components/staff/staff-portal-header";
 import { TeamMemberForm } from "@/components/staff/team-member-form";
+import { siteContent } from "@/data/site-content";
 import { getStaffContext, type StaffRole } from "@/lib/auth/staff";
 
 import { createTeamMemberAction } from "../actions";
@@ -18,7 +19,11 @@ const roleLabels: Record<StaffRole, string> = {
   viewer: "Viewer",
 };
 
-export default async function NewTeamMemberPage() {
+export default async function NewTeamMemberPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ template?: string | string[] }>;
+}) {
   const { access } = await getStaffContext();
 
   if (access.status === "unauthenticated") {
@@ -32,6 +37,17 @@ export default async function NewTeamMemberPage() {
   if (access.staff.role === "viewer") {
     redirect("/staff/team");
   }
+
+  const requestedTemplate = (await searchParams).template;
+  const useLeaderTemplate = requestedTemplate === "leader";
+  const leaderValues = useLeaderTemplate
+    ? {
+        name: siteContent.leadership.name,
+        positionTitle: siteContent.leadership.role,
+        biography: siteContent.leadership.biography.join("\n\n"),
+        displayOrder: 0,
+      }
+    : undefined;
 
   return (
     <div className="min-h-screen bg-cream">
@@ -61,7 +77,9 @@ export default async function NewTeamMemberPage() {
               id="new-team-member-heading"
               className="mt-2 font-display text-4xl font-bold text-navy-900 sm:text-5xl"
             >
-              New Team Member
+              {useLeaderTemplate
+                ? "Create Editable Leader Draft"
+                : "New Team Member"}
             </h1>
             <p className="mt-3 mb-8 max-w-2xl text-lg leading-8 text-slate-600">
               Enter only approved professional information intended for public
@@ -69,6 +87,7 @@ export default async function NewTeamMemberPage() {
             </p>
             <TeamMemberForm
               action={createTeamMemberAction}
+              initialValues={leaderValues}
               mode="create"
               role={access.staff.role}
             />

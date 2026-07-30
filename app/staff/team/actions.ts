@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { getStaffTeamMember } from "@/lib/team/data";
 import { isTeamMemberUuid } from "@/lib/team/types";
+import { createContentSlug } from "@/lib/content/slug";
 import {
   type TeamMemberFieldErrors,
   validateTeamMemberForm,
@@ -44,7 +45,7 @@ function isEditorOrAdmin(role: StaffRole) {
 
 function databaseErrorMessage(code: string | undefined) {
   if (code === "23505") {
-    return "That web address name is already in use. Choose another slug.";
+    return "A matching team record already exists. Please try again.";
   }
 
   return GENERIC_SAVE_ERROR;
@@ -69,7 +70,10 @@ export async function createTeamMemberAction(
     return { message: GENERIC_PERMISSION_ERROR };
   }
 
-  const validation = validateTeamMemberForm(formData);
+  const validation = validateTeamMemberForm(
+    formData,
+    createContentSlug(formData.get("name")),
+  );
 
   if (!validation.success) {
     return {
@@ -149,7 +153,7 @@ export async function updateTeamMemberAction(
     return { message: GENERIC_PERMISSION_ERROR };
   }
 
-  const validation = validateTeamMemberForm(formData);
+  const validation = validateTeamMemberForm(formData, existing.slug);
 
   if (!validation.success) {
     return {

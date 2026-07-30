@@ -18,6 +18,7 @@ type JurisdictionFormProps = {
   mode: "create" | "edit";
   role: StaffRole;
   status?: JurisdictionPublicationStatus;
+  contactsReady?: boolean;
 };
 
 const emptyValues: JurisdictionFormValues = {
@@ -27,6 +28,10 @@ const emptyValues: JurisdictionFormValues = {
   generalLocation: "",
   latitude: "",
   longitude: "",
+  primaryContactRole: "",
+  primaryContactName: "",
+  secondaryContactRole: "",
+  secondaryContactName: "",
   displayOrder: 0,
 };
 
@@ -53,6 +58,7 @@ export function JurisdictionForm({
   mode,
   role,
   status,
+  contactsReady = false,
 }: JurisdictionFormProps) {
   const [state, formAction, pending] = useActionState(action, {
     message: null,
@@ -275,6 +281,133 @@ export function JurisdictionForm({
                 message={state.fieldErrors?.longitude}
               />
             </div>
+          </div>
+        </fieldset>
+
+        <fieldset
+          disabled={!contactsReady}
+          className="border border-navy-900/10 bg-cream p-5 disabled:opacity-70"
+        >
+          <legend className="px-2 font-bold text-navy-900">
+            Approved public contacts
+          </legend>
+          <p className="mb-5 text-sm leading-6 text-slate-600">
+            Add only names and official roles approved for public release.
+            Both fields in a contact must be completed.
+          </p>
+          {!contactsReady ? (
+            <p className="mb-5 border-l-4 border-gold-500 bg-white px-4 py-3 text-sm font-semibold leading-6 text-navy-900">
+              Contact editing will become available after the reviewed
+              jurisdiction-contact migration is applied.
+            </p>
+          ) : null}
+          <div className="space-y-6">
+            {[
+              {
+                label: "Primary contact",
+                roleName: "primaryContactRole",
+                personName: "primaryContactName",
+                roleValue: initialValues.primaryContactRole,
+                personValue: initialValues.primaryContactName,
+              },
+              {
+                label: "Secondary contact",
+                roleName: "secondaryContactRole",
+                personName: "secondaryContactName",
+                roleValue: initialValues.secondaryContactRole,
+                personValue: initialValues.secondaryContactName,
+              },
+            ].map((contact) => (
+              <div
+                key={contact.roleName}
+                className="grid gap-5 border-t border-navy-900/10 pt-5 sm:grid-cols-2"
+              >
+                <div>
+                  <label
+                    htmlFor={`jurisdiction-${contact.roleName}`}
+                    className="font-bold text-navy-900"
+                  >
+                    {contact.label} role
+                  </label>
+                  <input
+                    id={`jurisdiction-${contact.roleName}`}
+                    name={contact.roleName}
+                    type="text"
+                    maxLength={100}
+                    defaultValue={contact.roleValue}
+                    aria-invalid={Boolean(
+                      state.fieldErrors?.[
+                        contact.roleName as
+                          | "primaryContactRole"
+                          | "secondaryContactRole"
+                      ],
+                    )}
+                    aria-describedby={
+                      state.fieldErrors?.[
+                        contact.roleName as
+                          | "primaryContactRole"
+                          | "secondaryContactRole"
+                      ]
+                        ? `jurisdiction-${contact.roleName}-error`
+                        : undefined
+                    }
+                    className={inputClass}
+                  />
+                  <FieldError
+                    id={`jurisdiction-${contact.roleName}-error`}
+                    message={
+                      state.fieldErrors?.[
+                        contact.roleName as
+                          | "primaryContactRole"
+                          | "secondaryContactRole"
+                      ]
+                    }
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor={`jurisdiction-${contact.personName}`}
+                    className="font-bold text-navy-900"
+                  >
+                    {contact.label} name
+                  </label>
+                  <input
+                    id={`jurisdiction-${contact.personName}`}
+                    name={contact.personName}
+                    type="text"
+                    maxLength={180}
+                    defaultValue={contact.personValue}
+                    aria-invalid={Boolean(
+                      state.fieldErrors?.[
+                        contact.personName as
+                          | "primaryContactName"
+                          | "secondaryContactName"
+                      ],
+                    )}
+                    aria-describedby={
+                      state.fieldErrors?.[
+                        contact.personName as
+                          | "primaryContactName"
+                          | "secondaryContactName"
+                      ]
+                        ? `jurisdiction-${contact.personName}-error`
+                        : undefined
+                    }
+                    className={inputClass}
+                  />
+                  <FieldError
+                    id={`jurisdiction-${contact.personName}-error`}
+                    message={
+                      state.fieldErrors?.[
+                        contact.personName as
+                          | "primaryContactName"
+                          | "secondaryContactName"
+                      ]
+                    }
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </fieldset>
 
