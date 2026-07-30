@@ -107,7 +107,6 @@ export default async function EditTeamMemberPage({
                 action={updateAction}
                 initialValues={{
                   name: member.name,
-                  slug: member.slug,
                   positionTitle: member.positionTitle,
                   biography: member.biography ?? "",
                   displayOrder: member.displayOrder,

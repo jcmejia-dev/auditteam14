@@ -12,7 +12,10 @@ import { JurisdictionRecordAction } from "@/components/staff/jurisdiction-record
 import { JurisdictionStatusBadge } from "@/components/staff/jurisdiction-status-badge";
 import { StaffPortalHeader } from "@/components/staff/staff-portal-header";
 import { getStaffContext, type StaffRole } from "@/lib/auth/staff";
-import { getStaffJurisdiction } from "@/lib/jurisdictions/data";
+import {
+  getStaffJurisdiction,
+  jurisdictionContactsAreReady,
+} from "@/lib/jurisdictions/data";
 import { isJurisdictionUuid } from "@/lib/jurisdictions/types";
 
 export const metadata: Metadata = {
@@ -50,6 +53,8 @@ export default async function EditJurisdictionPage({
   if (!jurisdiction) {
     notFound();
   }
+
+  const contactsReady = await jurisdictionContactsAreReady(supabase);
 
   const canEdit =
     access.staff.role === "admin" ||
@@ -116,11 +121,20 @@ export default async function EditJurisdictionPage({
                     jurisdiction.longitude === null
                       ? ""
                       : String(jurisdiction.longitude),
+                  primaryContactRole:
+                    jurisdiction.primaryContactRole ?? "",
+                  primaryContactName:
+                    jurisdiction.primaryContactName ?? "",
+                  secondaryContactRole:
+                    jurisdiction.secondaryContactRole ?? "",
+                  secondaryContactName:
+                    jurisdiction.secondaryContactName ?? "",
                   displayOrder: jurisdiction.displayOrder,
                 }}
                 mode="edit"
                 role={access.staff.role}
                 status={jurisdiction.status}
+                contactsReady={contactsReady}
               />
             ) : (
               <dl className="grid gap-6 sm:grid-cols-2">
@@ -173,6 +187,28 @@ export default async function EditJurisdictionPage({
                   </dt>
                   <dd className="mt-2 leading-7 text-slate-700">
                     {jurisdiction.displayOrder}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-bold uppercase tracking-[0.12em] text-teal-700">
+                    Primary public contact
+                  </dt>
+                  <dd className="mt-2 leading-7 text-slate-700">
+                    {jurisdiction.primaryContactRole &&
+                    jurisdiction.primaryContactName
+                      ? `${jurisdiction.primaryContactRole}: ${jurisdiction.primaryContactName}`
+                      : "Not provided"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-bold uppercase tracking-[0.12em] text-teal-700">
+                    Secondary public contact
+                  </dt>
+                  <dd className="mt-2 leading-7 text-slate-700">
+                    {jurisdiction.secondaryContactRole &&
+                    jurisdiction.secondaryContactName
+                      ? `${jurisdiction.secondaryContactRole}: ${jurisdiction.secondaryContactName}`
+                      : "Not provided"}
                   </dd>
                 </div>
               </dl>

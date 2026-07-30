@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getStaffContext, type StaffRole } from "@/lib/auth/staff";
+import { createContentSlug } from "@/lib/content/slug";
 import {
   getStaffAlbum,
   getStaffMediaItem,
@@ -110,7 +111,7 @@ function revalidateMediaPaths(albumSlug?: string) {
 
 function databaseErrorMessage(code: string | undefined) {
   if (code === "23505") {
-    return "That web address name is already in use. Choose another slug.";
+    return "A matching media record already exists. Please try again.";
   }
 
   if (code === "23503") {
@@ -173,7 +174,10 @@ export async function createAlbumAction(
     return { message: GENERIC_PERMISSION_ERROR };
   }
 
-  const validation = validateAlbumForm(formData);
+  const validation = validateAlbumForm(
+    formData,
+    createContentSlug(formData.get("title")),
+  );
 
   if (!validation.success) {
     return {
@@ -232,7 +236,7 @@ export async function updateAlbumAction(
     return { message: GENERIC_PERMISSION_ERROR };
   }
 
-  const validation = validateAlbumForm(formData);
+  const validation = validateAlbumForm(formData, album.slug);
 
   if (!validation.success) {
     return {
@@ -280,7 +284,7 @@ export async function updateAlbumAction(
     return { message: databaseErrorMessage(error?.code) };
   }
 
-  revalidateMediaPaths(validation.values.slug);
+  revalidateMediaPaths(album.slug);
   revalidatePath(`/staff/media/albums/${id}/edit`);
   redirect(
     intent === "publish"

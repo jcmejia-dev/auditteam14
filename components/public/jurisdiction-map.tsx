@@ -15,15 +15,9 @@ type JurisdictionMapProps = {
   resetVersion: number;
 };
 
-const markerStyles = {
-  hospital: {
-    color: "#102a43",
-    fillColor: "#3f7775",
-  },
-  office: {
-    color: "#102a43",
-    fillColor: "#c39a4a",
-  },
+const markerClasses = {
+  hospital: "jurisdiction-marker--hospital",
+  office: "jurisdiction-marker--office",
 } as const;
 
 function createPopupContent(location: JurisdictionLocation) {
@@ -43,6 +37,18 @@ function createPopupContent(location: JurisdictionLocation) {
   place.className = "jurisdiction-popup__location";
   place.textContent = location.location;
 
+  popup.append(category, title, place);
+
+  location.contacts.forEach((contact) => {
+    const detail = document.createElement("p");
+    const role = document.createElement("strong");
+
+    detail.className = "jurisdiction-popup__contact";
+    role.textContent = `${contact.role}: `;
+    detail.append(role, document.createTextNode(contact.name));
+    popup.append(detail);
+  });
+
   const directions = document.createElement("a");
   directions.className = "jurisdiction-popup__link";
   directions.href = getDirectionsUrl(location);
@@ -54,7 +60,7 @@ function createPopupContent(location: JurisdictionLocation) {
     `View directions to ${location.name} in Google Maps (opens in a new tab)`,
   );
 
-  popup.append(category, title, place, directions);
+  popup.append(directions);
 
   return popup;
 }
@@ -62,6 +68,7 @@ function createPopupContent(location: JurisdictionLocation) {
 function fitLocations(
   map: L.Map,
   locations: readonly JurisdictionLocation[],
+  animate = false,
 ) {
   if (locations.length === 0) {
     return;
@@ -74,7 +81,8 @@ function fitLocations(
   map.fitBounds(bounds, {
     padding: [44, 44],
     maxZoom: 11,
-    animate: false,
+    animate,
+    duration: animate ? 0.65 : undefined,
   });
 }
 
@@ -87,7 +95,7 @@ export default function JurisdictionMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerLayerRef = useRef<L.LayerGroup | null>(null);
-  const markersRef = useRef(new Map<string, L.CircleMarker>());
+  const markersRef = useRef(new Map<string, L.Marker>());
   const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -96,10 +104,16 @@ export default function JurisdictionMap({
     }
 
     try {
+      const shouldAnimate = !window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
       const map = L.map(containerRef.current, {
         center: [7.0, 124.35],
         zoom: 9,
         zoomControl: true,
+        zoomAnimation: shouldAnimate,
+        fadeAnimation: shouldAnimate,
+        markerZoomAnimation: shouldAnimate,
       });
       const tileLayer = L.tileLayer(
         "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -148,15 +162,21 @@ export default function JurisdictionMap({
     markersRef.current.clear();
 
     locations.forEach((location) => {
-      const style = markerStyles[location.category];
-      const marker = L.circleMarker(
+      const marker = L.marker(
         [location.latitude, location.longitude],
         {
-          radius: 10,
-          color: style.color,
-          weight: 3,
-          fillColor: style.fillColor,
-          fillOpacity: 0.95,
+          icon: L.divIcon({
+            className: [
+              "jurisdiction-marker",
+              markerClasses[location.category],
+            ].join(" "),
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -14],
+          }),
+          keyboard: true,
+          title: location.name,
+          alt: `${location.name} map marker`,
         },
       );
 
@@ -179,18 +199,7 @@ export default function JurisdictionMap({
 
     markersRef.current.forEach((marker, id) => {
       const isSelected = id === selectedId;
-      const location = locations.find((item) => item.id === id);
-      const defaultStyle = location
-        ? markerStyles[location.category]
-        : markerStyles.hospital;
-
-      marker.setRadius(isSelected ? 14 : 10);
-      marker.setStyle({
-        color: isSelected ? "#b42318" : defaultStyle.color,
-        weight: isSelected ? 4 : 3,
-        fillColor: isSelected ? "#d9b45a" : defaultStyle.fillColor,
-        fillOpacity: 0.95,
-      });
+      marker.getElement()?.classList.toggle("is-active", isSelected);
     });
 
     if (!selectedId) {
@@ -208,10 +217,13 @@ export default function JurisdictionMap({
         "(prefers-reduced-motion: reduce)",
       ).matches;
 
-      map.setView(
+      map.flyTo(
         [selectedLocation.latitude, selectedLocation.longitude],
         12,
-        { animate: shouldAnimate },
+        {
+          animate: shouldAnimate,
+          duration: shouldAnimate ? 0.65 : 0,
+        },
       );
       selectedMarker.openPopup();
     }
@@ -221,7 +233,11 @@ export default function JurisdictionMap({
     const map = mapRef.current;
 
     if (map) {
-      fitLocations(map, locations);
+      const shouldAnimate =
+        resetVersion > 0 &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      fitLocations(map, locations, shouldAnimate);
     }
   }, [locations, resetVersion]);
 

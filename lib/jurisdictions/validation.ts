@@ -11,6 +11,10 @@ export type JurisdictionField =
   | "generalLocation"
   | "latitude"
   | "longitude"
+  | "primaryContactRole"
+  | "primaryContactName"
+  | "secondaryContactRole"
+  | "secondaryContactName"
   | "displayOrder";
 
 export type JurisdictionFieldErrors = Partial<
@@ -26,6 +30,10 @@ type ParsedJurisdiction = {
     general_location: string;
     latitude: number | null;
     longitude: number | null;
+    primary_contact_role: string | null;
+    primary_contact_name: string | null;
+    secondary_contact_role: string | null;
+    secondary_contact_name: string | null;
     display_order: number;
   };
 };
@@ -48,6 +56,28 @@ function parseCoordinate(value: string, minimum: number, maximum: number) {
   return parsed >= minimum && parsed <= maximum ? parsed : Number.NaN;
 }
 
+function validateContactPair(
+  role: string,
+  name: string,
+  roleField: "primaryContactRole" | "secondaryContactRole",
+  nameField: "primaryContactName" | "secondaryContactName",
+  errors: JurisdictionFieldErrors,
+) {
+  if ((role.length === 0) !== (name.length === 0)) {
+    errors[roleField] = "Enter both the public role and name, or leave both blank.";
+    errors[nameField] = "Enter both the public role and name, or leave both blank.";
+    return;
+  }
+
+  if (role.length > 100) {
+    errors[roleField] = "Keep the public role within 100 characters.";
+  }
+
+  if (name.length > 180) {
+    errors[nameField] = "Keep the public name within 180 characters.";
+  }
+}
+
 export function validateJurisdictionForm(formData: FormData):
   | { success: true; data: ParsedJurisdiction }
   | {
@@ -66,6 +96,22 @@ export function validateJurisdictionForm(formData: FormData):
   const generalLocation = textValue(formData, "generalLocation").trim();
   const latitudeText = textValue(formData, "latitude").trim();
   const longitudeText = textValue(formData, "longitude").trim();
+  const primaryContactRole = textValue(
+    formData,
+    "primaryContactRole",
+  ).trim();
+  const primaryContactName = textValue(
+    formData,
+    "primaryContactName",
+  ).trim();
+  const secondaryContactRole = textValue(
+    formData,
+    "secondaryContactRole",
+  ).trim();
+  const secondaryContactName = textValue(
+    formData,
+    "secondaryContactName",
+  ).trim();
   const latitude = parseCoordinate(latitudeText, -90, 90);
   const longitude = parseCoordinate(longitudeText, -180, 180);
   const displayOrderText = textValue(formData, "displayOrder").trim();
@@ -105,6 +151,21 @@ export function validateJurisdictionForm(formData: FormData):
       "Enter both latitude and longitude, or leave both blank.";
   }
 
+  validateContactPair(
+    primaryContactRole,
+    primaryContactName,
+    "primaryContactRole",
+    "primaryContactName",
+    errors,
+  );
+  validateContactPair(
+    secondaryContactRole,
+    secondaryContactName,
+    "secondaryContactRole",
+    "secondaryContactName",
+    errors,
+  );
+
   if (
     !Number.isInteger(displayOrder) ||
     displayOrder < 0 ||
@@ -120,6 +181,10 @@ export function validateJurisdictionForm(formData: FormData):
     generalLocation,
     latitude: latitudeText,
     longitude: longitudeText,
+    primaryContactRole,
+    primaryContactName,
+    secondaryContactRole,
+    secondaryContactName,
     displayOrder: Number.isFinite(displayOrder) ? displayOrder : 0,
   };
 
@@ -138,6 +203,10 @@ export function validateJurisdictionForm(formData: FormData):
         general_location: generalLocation,
         latitude,
         longitude,
+        primary_contact_role: primaryContactRole || null,
+        primary_contact_name: primaryContactName || null,
+        secondary_contact_role: secondaryContactRole || null,
+        secondary_contact_name: secondaryContactName || null,
         display_order: displayOrder,
       },
     },

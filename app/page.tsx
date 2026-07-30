@@ -8,7 +8,6 @@ import { LatestAnnouncementsSection } from "@/components/public/latest-announcem
 import { MediaSection } from "@/components/public/media-section";
 import { SiteFooter } from "@/components/public/site-footer";
 import { SiteHeader } from "@/components/public/site-header";
-import { ValuesSection } from "@/components/public/values-section";
 import { VisionMissionSection } from "@/components/public/vision-mission-section";
 
 export const revalidate = 300;
@@ -29,7 +28,6 @@ export default function Home() {
         <LatestActivitiesSection />
         <InstitutionalInformationSection />
         <VisionMissionSection />
-        <ValuesSection />
         <JurisdictionSection />
         <LeadershipSection />
         <MediaSection />

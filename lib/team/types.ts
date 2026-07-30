@@ -28,7 +28,6 @@ export type PublicTeamMemberRecord = Pick<
 
 export type TeamMemberFormValues = {
   name: string;
-  slug: string;
   positionTitle: string;
   biography: string;
   displayOrder: number;

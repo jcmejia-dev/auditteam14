@@ -112,7 +112,6 @@ export default async function EditActivityPage({
                 action={updateAction}
                 initialValues={{
                   title: activity.title,
-                  slug: activity.slug,
                   summary: activity.summary ?? "",
                   body: activity.body ?? "",
                   activityDate: activity.activityDate ?? "",
@@ -131,14 +130,6 @@ export default async function EditActivityPage({
                   </dt>
                   <dd className="mt-2 text-lg leading-8 text-navy-900">
                     {activity.title}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-bold uppercase tracking-[0.12em] text-teal-700">
-                    Web address name
-                  </dt>
-                  <dd className="mt-2 break-words leading-7 text-slate-700">
-                    {activity.slug}
                   </dd>
                 </div>
                 {activity.activityDate ? (

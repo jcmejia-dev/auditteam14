@@ -32,11 +32,11 @@ exposing the table through PostgREST.
 | --- | --- | --- |
 | `private.user_roles` | Active and historical staff role assignments | References `auth.users`; at most one active role of any kind per user; inactive history is retained; no client table policies or privileges |
 | `public.profiles` | Minimal staff-controlled display name and job title | One-to-one with `auth.users`; contains no role or authorization field |
-| `public.site_settings` | Public-safe website settings and approved values | Only rows marked public and published are visible publicly; secrets are prohibited |
+| `public.site_settings` | Public-safe website settings and approved values | The `institutional_information` row stores approved organizational details, coverage, and Core Values; only rows marked public and published are visible publicly; secrets are prohibited |
 | `public.team_members` | Approved public leadership/team entries | Publication state, slug, ordering, and optional local asset path |
 | `public.announcements` | Public announcements | Publication state, slug, optional expiry, and featured ordering; expired rows remain staff-visible but are excluded publicly |
 | `public.activities` | Approved activity information | Publication state, activity date, general location, and ordering |
-| `public.jurisdictions` | Confirmed audit-jurisdiction locations | Publication state and constrained coordinates; no legacy data is seeded |
+| `public.jurisdictions` | Confirmed audit-jurisdiction locations | Publication state and constrained coordinates; a review-only forward migration adds two optional approved public role/name pairs; no legacy data is seeded |
 | `public.albums` | Grouping metadata for approved media | Parent of optional `media_items` records |
 | `public.media_items` | Image/video metadata for approved assets | Optional album relationship; publication requires a constrained relative object key; the review-only video migration adds an optional event date and a protected upload-completion timestamp |
 | `public.public_documents` | Metadata for approved public documents | Publication requires a constrained relative object key, but no bucket exists |
@@ -167,6 +167,14 @@ role and is reviewed independently.
 The six jurisdiction entries inherited from the legacy website are not seeded.
 Their names, categories, locations, coordinates, and inclusion must be
 stakeholder-confirmed before insertion or publication.
+
+`20260730000100_add_jurisdiction_public_contacts.sql` is a review-only
+forward migration that adds two optional role/name pairs to each jurisdiction.
+Both values in a pair are required together and are length constrained. The
+existing publication RLS, draft-only editor rules, administrator controls,
+audit triggers, and actor attribution remain unchanged. The application
+detects migration readiness and keeps the contact editor disabled until the
+columns and their column-level SELECT grants are available.
 
 The deployed foundation migration creates media/document metadata tables but
 no buckets or Storage policies. A later review-only migration,

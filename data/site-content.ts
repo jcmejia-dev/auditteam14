@@ -46,20 +46,32 @@ export const siteContent = {
   ] satisfies InformationItem[],
   institutional: {
     eyebrow: "Institutional information",
-    title: "Audit Team 14 at a glance",
+    title: "Information",
     introduction:
-      "Audit Team 14 serves under the Commission on Audit – BARMM, Audit Group C – Maguindanao. This portal provides public access to the team’s institutional information, activities, and approved updates.",
+      "Organizational details, regional coverage, and the core values guiding Audit Team 14’s public service.",
     organization: [
       {
-        label: "Commission",
-        value: "Commission on Audit – BARMM",
+        label: "Region",
+        value: "COA – BARMM",
       },
       {
-        label: "Audit group",
+        label: "Regional Director",
+        value: "RD Atty. Omar S. Roque",
+      },
+      {
+        label: "Assistant Regional Director",
+        value: "ARD Wilson Ibrahim L. Panawidan, CPA",
+      },
+      {
+        label: "Audit Group",
         value: "Audit Group C – Maguindanao",
       },
       {
-        label: "Audit team",
+        label: "Supervising Auditor",
+        value: "Atty. Rosario D. Santos, CPA",
+      },
+      {
+        label: "Team",
         value: "Audit Team 14",
       },
       {
@@ -79,46 +91,65 @@ export const siteContent = {
       },
       {
         label: "Focus",
-        value: "Public-sector auditing and accountability",
+        value: "Public sector auditing and accountability",
+      },
+      {
+        label: "Scope",
+        value: "Comprehensive audit services",
+      },
+      {
+        label: "Standards",
+        value: "International audit standards",
+      },
+      {
+        label: "Commitment",
+        value: "Transparency and accountability",
       },
     ],
   },
   vision: {
     title: "Vision",
-    text: "A trustworthy, respected and independent audit institution that is an enabling partner of government in ensuring a better life for every Filipino.",
+    text: "A credible, trustworthy and independent Supreme Audit Institution; a vibrant partner in nation-building; a bulwark of integrity and competence; an organization of professionals with a culture of excellence; a respected member of international organizations of Supreme Audit Institutions.",
   },
   mission: {
     title: "Mission",
-    text: "To ensure accountability for public resources, promote transparency, and help improve government operations, in partnership with stakeholders, for the benefit of the Filipino people.",
+    text: "To carry out our constitutional mandate with the highest degree of professionalism, competence, integrity, teamwork and organizational efficiency, and promote the people's trust in government by upholding public accountability.",
   },
   values: [
     {
-      title: "God Centeredness",
-    },
-    {
-      title: "Patriotism",
-    },
-    {
-      title: "Excellence",
-    },
-    {
       title: "Integrity",
+      description: "Upholding the highest ethical standards in all audit activities.",
     },
     {
       title: "Professionalism",
+      description: "Excellence in audit practices and continuous improvement.",
     },
     {
-      title: "Courtesy, Modesty and Humility",
+      title: "Accountability",
+      description: "Ensuring public trust through transparent governance.",
     },
     {
-      title: "Reverence for Truth and the Rule of Law",
+      title: "Teamwork",
+      description: "A collaborative approach to achieving audit objectives.",
+    },
+    {
+      title: "Innovation",
+      description: "Embracing modern audit methodologies and technologies.",
+    },
+    {
+      title: "Excellence",
+      description: "Commitment to quality service and best practices.",
     },
   ] as const,
   leadership: {
     name: "Bernard R. Sero, DHum, MBA",
     role: "Audit Team Leader",
-    description:
-      "Leading Audit Team 14 within Audit Group C – Maguindanao.",
+    facebookUrl: "https://www.facebook.com/brsero13",
+    biography: [
+      "Bernard R. Sero brings extensive experience in public sector auditing and financial management to his role as Audit Team Leader for Team 14. With dual qualifications in Humanities and Business Administration, he combines analytical rigor with a deep understanding of organizational dynamics in the BARMM context.",
+      "Under his leadership, Audit Team 14 has consistently delivered comprehensive audit reports that promote transparency and accountability in Maguindanao’s public institutions, ensuring that government resources are utilized efficiently for the benefit of the Bangsamoro people.",
+      "His expertise encompasses financial auditing, compliance reviews, and performance evaluation of government agencies within the BARMM region. With a commitment to professional development and capacity building, Bernard ensures that Team 14 remains at the forefront of audit innovation and best practices.",
+    ],
   },
   media: [
     {
@@ -139,7 +170,16 @@ export const siteContent = {
     organization: "COA–BARMM Regional Office",
     group: "Audit Group C – Maguindanao",
     city: "Cotabato City",
+    address: "RC Cotabato City – South, District 3870",
+    clubFacebookUrl:
+      "https://www.facebook.com/people/Rotary-Club-of-Cotabato-City-South/100064269356393/?rdid=GAM2mLRsHsrrhtN7&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1G8V6wDVEs%2F",
     mapUrl:
       "https://maps.google.com/?q=COA+BARMM+Regional+Office+Cotabato+City",
+  },
+  footer: {
+    description:
+      "Commission on Audit – Bangsamoro Autonomous Region in Muslim Mindanao. Audit Group C – Maguindanao, Team 14 is dedicated to ensuring fiscal responsibility and transparency in public sector operations through professional audit services.",
+    copyright:
+      "© 2026 Commission on Audit – BARMM. Audit Team 14. All rights reserved.",
   },
 } as const;

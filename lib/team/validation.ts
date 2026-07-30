@@ -2,7 +2,6 @@ import type { TeamMemberFormValues } from "./types";
 
 export type TeamMemberField =
   | "name"
-  | "slug"
   | "positionTitle"
   | "biography"
   | "displayOrder";
@@ -27,7 +26,7 @@ function textValue(formData: FormData, name: string) {
   return typeof value === "string" ? value : "";
 }
 
-export function validateTeamMemberForm(formData: FormData):
+export function validateTeamMemberForm(formData: FormData, slug: string):
   | { success: true; data: ParsedTeamMember }
   | {
       success: false;
@@ -35,7 +34,6 @@ export function validateTeamMemberForm(formData: FormData):
       values: TeamMemberFormValues;
     } {
   const name = textValue(formData, "name").trim();
-  const slug = textValue(formData, "slug").trim().toLowerCase();
   const positionTitle = textValue(formData, "positionTitle").trim();
   const biography = textValue(formData, "biography").trim();
   const displayOrderText = textValue(formData, "displayOrder").trim();
@@ -44,15 +42,6 @@ export function validateTeamMemberForm(formData: FormData):
 
   if (name.length < 1 || name.length > 160) {
     errors.name = "Enter a public name between 1 and 160 characters.";
-  }
-
-  if (
-    slug.length < 1 ||
-    slug.length > 160 ||
-    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)
-  ) {
-    errors.slug =
-      "Use lowercase letters, numbers, and single hyphens only.";
   }
 
   if (positionTitle.length < 1 || positionTitle.length > 160) {
@@ -74,7 +63,6 @@ export function validateTeamMemberForm(formData: FormData):
 
   const values: TeamMemberFormValues = {
     name,
-    slug,
     positionTitle,
     biography,
     displayOrder: Number.isFinite(displayOrder) ? displayOrder : 0,

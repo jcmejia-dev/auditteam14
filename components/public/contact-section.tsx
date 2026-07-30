@@ -23,6 +23,15 @@ export function ContactSection() {
             {siteContent.contact.city}
           </p>
           <a
+            href={siteContent.contact.clubFacebookUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-block rounded-sm text-lg text-navy-100 underline decoration-gold-500/50 underline-offset-4 hover:text-white"
+            aria-label={`${siteContent.contact.address} on Facebook (opens in a new tab)`}
+          >
+            {siteContent.contact.address}
+          </a>
+          <a
             href={siteContent.contact.mapUrl}
             target="_blank"
             rel="noopener noreferrer"

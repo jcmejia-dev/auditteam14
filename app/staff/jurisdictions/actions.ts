@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getStaffContext, type StaffRole } from "@/lib/auth/staff";
-import { getStaffJurisdiction } from "@/lib/jurisdictions/data";
+import {
+  getStaffJurisdiction,
+  jurisdictionContactsAreReady,
+} from "@/lib/jurisdictions/data";
 import { isJurisdictionUuid } from "@/lib/jurisdictions/types";
 import {
   type JurisdictionFieldErrors,
@@ -59,6 +62,30 @@ function coordinatesRequired(
   };
 }
 
+function withoutContactColumns<
+  T extends {
+    primary_contact_role: string | null;
+    primary_contact_name: string | null;
+    secondary_contact_role: string | null;
+    secondary_contact_name: string | null;
+  },
+>(values: T) {
+  const {
+    primary_contact_role: _primaryContactRole,
+    primary_contact_name: _primaryContactName,
+    secondary_contact_role: _secondaryContactRole,
+    secondary_contact_name: _secondaryContactName,
+    ...legacyValues
+  } = values;
+
+  void _primaryContactRole;
+  void _primaryContactName;
+  void _secondaryContactRole;
+  void _secondaryContactName;
+
+  return legacyValues;
+}
+
 export async function createJurisdictionAction(
   _previousState: JurisdictionActionState,
   formData: FormData,
@@ -99,8 +126,14 @@ export async function createJurisdictionAction(
     }
   }
 
+  const contactsReady = await jurisdictionContactsAreReady(
+    context.supabase,
+  );
+  const validatedDatabaseValues = contactsReady
+    ? validation.data.databaseValues
+    : withoutContactColumns(validation.data.databaseValues);
   const databaseValues = {
-    ...validation.data.databaseValues,
+    ...validatedDatabaseValues,
     display_order:
       context.role === "admin"
         ? validation.data.databaseValues.display_order
@@ -190,8 +223,14 @@ export async function updateJurisdictionAction(
     }
   }
 
+  const contactsReady = await jurisdictionContactsAreReady(
+    context.supabase,
+  );
+  const validatedDatabaseValues = contactsReady
+    ? validation.data.databaseValues
+    : withoutContactColumns(validation.data.databaseValues);
   const databaseValues = {
-    ...validation.data.databaseValues,
+    ...validatedDatabaseValues,
     display_order:
       context.role === "admin"
         ? validation.data.databaseValues.display_order

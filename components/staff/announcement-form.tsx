@@ -22,7 +22,6 @@ type AnnouncementFormProps = {
 
 const emptyValues: AnnouncementFormValues = {
   title: "",
-  slug: "",
   summary: "",
   body: "",
   isFeatured: false,
@@ -82,40 +81,6 @@ export function AnnouncementForm({
           ) : (
             <p id="title-help" className="mt-2 text-sm leading-6 text-slate-600">
               Use a clear public-facing title.
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label htmlFor="slug" className="font-bold text-navy-900">
-            Web address name <span className="text-patriot-red">*</span>
-          </label>
-          <div className="mt-2 flex min-h-12 items-stretch">
-            <span className="flex items-center rounded-l-sm border border-r-0 border-navy-900/20 bg-cream-dark px-3 text-sm text-slate-600">
-              /announcements/
-            </span>
-            <input
-              id="slug"
-              name="slug"
-              type="text"
-              required
-              maxLength={160}
-              pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-              defaultValue={initialValues.slug}
-              aria-describedby={
-                state.fieldErrors?.slug ? "slug-error" : "slug-help"
-              }
-              aria-invalid={Boolean(state.fieldErrors?.slug)}
-              className="min-w-0 flex-1 rounded-r-sm border border-navy-900/20 bg-white px-4 py-3 text-base text-navy-900 shadow-sm focus:border-teal-700"
-            />
-          </div>
-          {state.fieldErrors?.slug ? (
-            <p id="slug-error" className="mt-2 text-sm font-semibold text-red-700">
-              {state.fieldErrors.slug}
-            </p>
-          ) : (
-            <p id="slug-help" className="mt-2 text-sm leading-6 text-slate-600">
-              Lowercase letters, numbers, and single hyphens only.
             </p>
           )}
         </div>

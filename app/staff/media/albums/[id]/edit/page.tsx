@@ -136,7 +136,6 @@ export default async function EditAlbumPage({
                   action={updateAction}
                   initialValues={{
                     title: album.title,
-                    slug: album.slug,
                     description: album.description ?? "",
                     displayOrder: album.displayOrder,
                   }}
@@ -152,14 +151,6 @@ export default async function EditAlbumPage({
                     </dt>
                     <dd className="mt-2 text-lg text-navy-900">
                       {album.title}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-bold uppercase tracking-[0.12em] text-teal-700">
-                      Web address name
-                    </dt>
-                    <dd className="mt-2 break-words text-slate-700">
-                      {album.slug}
                     </dd>
                   </div>
                   {album.description ? (

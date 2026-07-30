@@ -110,7 +110,6 @@ export default async function EditAnnouncementPage({
                 action={updateAction}
                 initialValues={{
                   title: announcement.title,
-                  slug: announcement.slug,
                   summary: announcement.summary ?? "",
                   body: announcement.body,
                   isFeatured: announcement.isFeatured,
@@ -129,14 +128,6 @@ export default async function EditAnnouncementPage({
                   </dt>
                   <dd className="mt-2 text-lg leading-8 text-navy-900">
                     {announcement.title}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-bold uppercase tracking-[0.12em] text-teal-700">
-                    Web address name
-                  </dt>
-                  <dd className="mt-2 break-words leading-7 text-slate-700">
-                    {announcement.slug}
                   </dd>
                 </div>
                 {announcement.summary ? (
