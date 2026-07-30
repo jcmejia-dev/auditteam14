@@ -21,6 +21,10 @@ type DatabaseJurisdiction = {
   general_location: unknown;
   latitude: unknown;
   longitude: unknown;
+  primary_contact_role?: unknown;
+  primary_contact_name?: unknown;
+  secondary_contact_role?: unknown;
+  secondary_contact_name?: unknown;
   status: unknown;
   published_at: unknown;
   display_order: unknown;
@@ -35,6 +39,10 @@ type DatabasePublicJurisdiction = {
   general_location: unknown;
   latitude: unknown;
   longitude: unknown;
+  primary_contact_role?: unknown;
+  primary_contact_name?: unknown;
+  secondary_contact_role?: unknown;
+  secondary_contact_name?: unknown;
 };
 
 function nullableString(value: unknown) {
@@ -52,6 +60,21 @@ function numericValue(value: unknown) {
   }
 
   return null;
+}
+
+function contactValue(role: unknown, name: unknown) {
+  if (
+    typeof role !== "string" ||
+    typeof name !== "string" ||
+    role.trim().length === 0 ||
+    role.trim().length > 100 ||
+    name.trim().length === 0 ||
+    name.trim().length > 180
+  ) {
+    return null;
+  }
+
+  return { role: role.trim(), name: name.trim() };
 }
 
 function isCategory(value: unknown): value is JurisdictionCategory {
@@ -96,6 +119,10 @@ function normalizeJurisdiction(
     generalLocation: value.general_location,
     latitude: numericValue(value.latitude),
     longitude: numericValue(value.longitude),
+    primaryContactRole: nullableString(value.primary_contact_role),
+    primaryContactName: nullableString(value.primary_contact_name),
+    secondaryContactRole: nullableString(value.secondary_contact_role),
+    secondaryContactName: nullableString(value.secondary_contact_name),
     status: value.status,
     publishedAt: nullableString(value.published_at),
     displayOrder: value.display_order,
@@ -134,23 +161,65 @@ function normalizePublicJurisdiction(
     longitude,
     location: value.general_location,
     category: value.category,
+    contacts: [
+      contactValue(
+        value.primary_contact_role,
+        value.primary_contact_name,
+      ),
+      contactValue(
+        value.secondary_contact_role,
+        value.secondary_contact_name,
+      ),
+    ].filter(
+      (contact): contact is { role: string; name: string } =>
+        contact !== null,
+    ),
   };
 }
 
-const staffColumns =
+const legacyStaffColumns =
   "id,name,abbreviation,category,general_location,latitude,longitude,status,published_at,display_order,created_at,updated_at";
-const publicColumns =
+const staffColumns = `${legacyStaffColumns},primary_contact_role,primary_contact_name,secondary_contact_role,secondary_contact_name`;
+const legacyPublicColumns =
   "name,abbreviation,category,general_location,latitude,longitude";
+const publicColumns = `${legacyPublicColumns},primary_contact_role,primary_contact_name,secondary_contact_role,secondary_contact_name`;
+
+export async function jurisdictionContactsAreReady(
+  supabase: SupabaseClient,
+) {
+  const { error } = await supabase
+    .from("jurisdictions")
+    .select("primary_contact_role")
+    .limit(1);
+
+  return !error;
+}
 
 export async function getStaffJurisdictions(supabase: SupabaseClient) {
-  const { data, error } = await supabase
+  const contactResponse = await supabase
     .from("jurisdictions")
     .select(staffColumns)
     .order("display_order", { ascending: true })
     .order("name", { ascending: true })
     .limit(200);
 
-  if (error) {
+  const contactsReady = !contactResponse.error;
+  let data: unknown[] | null = contactResponse.data;
+  let queryError = contactResponse.error;
+
+  if (queryError) {
+    const legacyResponse = await supabase
+      .from("jurisdictions")
+      .select(legacyStaffColumns)
+      .order("display_order", { ascending: true })
+      .order("name", { ascending: true })
+      .limit(200);
+
+    data = legacyResponse.data;
+    queryError = legacyResponse.error;
+  }
+
+  if (queryError) {
     return { jurisdictions: [], error: true };
   }
 
@@ -160,20 +229,34 @@ export async function getStaffJurisdictions(supabase: SupabaseClient) {
     )
     .filter((item): item is JurisdictionRecord => item !== null);
 
-  return { jurisdictions, error: false };
+  return { jurisdictions, error: false, contactsReady };
 }
 
 export async function getStaffJurisdiction(
   supabase: SupabaseClient,
   id: string,
 ) {
-  const { data, error } = await supabase
+  const contactResponse = await supabase
     .from("jurisdictions")
     .select(staffColumns)
     .eq("id", id)
     .maybeSingle();
 
-  if (error || !data) {
+  let data: unknown = contactResponse.data;
+  let queryError = contactResponse.error;
+
+  if (queryError) {
+    const legacyResponse = await supabase
+      .from("jurisdictions")
+      .select(legacyStaffColumns)
+      .eq("id", id)
+      .maybeSingle();
+
+    data = legacyResponse.data;
+    queryError = legacyResponse.error;
+  }
+
+  if (queryError || !data) {
     return null;
   }
 
@@ -182,7 +265,7 @@ export async function getStaffJurisdiction(
 
 export async function getPublicJurisdictionSource() {
   const supabase = createPublicClient();
-  const { data, error } = await supabase
+  const contactResponse = await supabase
     .from("jurisdictions")
     .select(publicColumns)
     .eq("status", "published")
@@ -190,7 +273,23 @@ export async function getPublicJurisdictionSource() {
     .order("name", { ascending: true })
     .limit(200);
 
-  if (error) {
+  let data: unknown[] | null = contactResponse.data;
+  let queryError = contactResponse.error;
+
+  if (queryError) {
+    const legacyResponse = await supabase
+      .from("jurisdictions")
+      .select(legacyPublicColumns)
+      .eq("status", "published")
+      .order("display_order", { ascending: true })
+      .order("name", { ascending: true })
+      .limit(200);
+
+    data = legacyResponse.data;
+    queryError = legacyResponse.error;
+  }
+
+  if (queryError) {
     return {
       locations: [] as JurisdictionLocation[],
       useFallback: true,

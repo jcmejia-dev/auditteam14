@@ -24,6 +24,13 @@ const quickActions = [
     href: "/staff/activities/new",
   },
   {
+    title: "Manage Information",
+    description:
+      "Update approved organizational details, regional coverage, and Core Values.",
+    icon: "information",
+    href: "/staff/institutional",
+  },
+  {
     title: "Manage Team",
     description: "Maintain approved public names, positions, and biographies.",
     icon: "team",
@@ -143,7 +150,8 @@ export default async function StaffDashboardPage() {
                   (role !== "viewer" ||
                     action.icon === "team" ||
                     action.icon === "map" ||
-                    action.icon === "media") &&
+                    action.icon === "media" ||
+                    action.icon === "information") &&
                   (action.icon !== "history" || role === "admin")
                     ? action.href
                     : undefined

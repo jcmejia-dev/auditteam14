@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { JurisdictionForm } from "@/components/staff/jurisdiction-form";
 import { StaffPortalHeader } from "@/components/staff/staff-portal-header";
 import { getStaffContext, type StaffRole } from "@/lib/auth/staff";
+import { jurisdictionContactsAreReady } from "@/lib/jurisdictions/data";
 
 import { createJurisdictionAction } from "../actions";
 
@@ -19,7 +20,7 @@ const roleLabels: Record<StaffRole, string> = {
 };
 
 export default async function NewJurisdictionPage() {
-  const { access } = await getStaffContext();
+  const { access, supabase } = await getStaffContext();
 
   if (access.status === "unauthenticated") {
     redirect("/staff/login");
@@ -32,6 +33,8 @@ export default async function NewJurisdictionPage() {
   if (access.staff.role === "viewer") {
     redirect("/staff/jurisdictions");
   }
+
+  const contactsReady = await jurisdictionContactsAreReady(supabase);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -71,6 +74,7 @@ export default async function NewJurisdictionPage() {
               action={createJurisdictionAction}
               mode="create"
               role={access.staff.role}
+              contactsReady={contactsReady}
             />
           </section>
 

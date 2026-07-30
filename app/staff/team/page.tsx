@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { StaffPortalHeader } from "@/components/staff/staff-portal-header";
 import { TeamMemberStatusBadge } from "@/components/staff/team-member-status-badge";
+import { siteContent } from "@/data/site-content";
 import { getStaffContext, type StaffRole } from "@/lib/auth/staff";
 import { getStaffTeamMembers } from "@/lib/team/data";
 import { getTeamMemberInitials } from "@/lib/team/types";
@@ -118,16 +120,64 @@ export default async function StaffTeamPage({
               </p>
             </div>
           ) : teamMembers.length === 0 ? (
-            <div className="mt-7 border border-navy-900/10 bg-white px-6 py-10 text-center shadow-[0_14px_35px_rgba(16,42,67,0.06)] sm:px-10">
-              <h2 className="font-display text-3xl font-bold text-navy-900">
-                No team records yet
-              </h2>
-              <p className="mx-auto mt-3 max-w-xl leading-7 text-slate-600">
-                {canCreate
-                  ? "Create a draft after a team member’s public information is approved."
-                  : "There are no team-member records available to view."}
-              </p>
-            </div>
+            <article className="mt-7 overflow-hidden border border-navy-900/10 bg-white shadow-[0_14px_35px_rgba(16,42,67,0.06)]">
+              <div className="grid md:grid-cols-[13rem_minmax(0,1fr)]">
+                <div className="relative min-h-72 bg-navy-900 md:min-h-full">
+                  <Image
+                    src="/Bernard.png"
+                    alt="Bernard R. Sero, Audit Team Leader"
+                    fill
+                    sizes="(min-width: 768px) 208px, calc(100vw - 3rem)"
+                    className="object-cover object-[center_42%]"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-4 border border-gold-500/55"
+                  />
+                </div>
+                <div className="p-6 sm:p-8">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="rounded-full border border-gold-500/40 bg-gold-200/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-navy-900">
+                      Website default
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+                      Not a database record
+                    </span>
+                  </div>
+                  <h2 className="mt-5 font-display text-3xl font-bold text-navy-900">
+                    {siteContent.leadership.name}
+                  </h2>
+                  <p className="mt-2 font-bold uppercase tracking-[0.14em] text-teal-700">
+                    {siteContent.leadership.role}
+                  </p>
+                  <div className="mt-5 space-y-3 text-sm leading-7 text-slate-600">
+                    {siteContent.leadership.biography.map((paragraph) => (
+                      <p key={paragraph}>{paragraph}</p>
+                    ))}
+                  </div>
+                  <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                    {canCreate ? (
+                      <Link
+                        href="/staff/team/new?template=leader"
+                        className="inline-flex min-h-12 items-center justify-center rounded-sm bg-teal-700 px-6 py-3 font-bold text-white hover:bg-navy-900"
+                      >
+                        Create Editable Draft
+                      </Link>
+                    ) : null}
+                    <Link
+                      href="/staff/institutional"
+                      className="inline-flex min-h-12 items-center justify-center rounded-sm border border-teal-700 px-6 py-3 text-center font-bold text-teal-700 hover:bg-teal-700 hover:text-white"
+                    >
+                      Manage Organizational Details
+                    </Link>
+                  </div>
+                  <p className="mt-5 text-sm leading-6 text-slate-600">
+                    The public website keeps this approved default until a
+                    team-member record is published.
+                  </p>
+                </div>
+              </div>
+            </article>
           ) : (
             <div className="mt-7 grid gap-5">
               {teamMembers.map((member) => {

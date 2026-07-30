@@ -1,5 +1,10 @@
 export type JurisdictionCategory = "hospital" | "office";
 
+export type JurisdictionContact = {
+  role: string;
+  name: string;
+};
+
 export type JurisdictionLocation = {
   id: string;
   name: string;
@@ -8,6 +13,7 @@ export type JurisdictionLocation = {
   longitude: number;
   location: string;
   category: JurisdictionCategory;
+  contacts: readonly JurisdictionContact[];
 };
 
 export const jurisdictionLocations: readonly JurisdictionLocation[] = [
@@ -19,6 +25,10 @@ export const jurisdictionLocations: readonly JurisdictionLocation[] = [
     longitude: 124.8,
     location: "Buluan Municipality, Maguindanao del Sur",
     category: "hospital",
+    contacts: [
+      { role: "Medical Center Chief", name: "Dr. Rizaldy L. Piang" },
+      { role: "Accountant", name: "Michael Edzraphil, CPA" },
+    ],
   },
   {
     id: "dbtsdh",
@@ -28,6 +38,13 @@ export const jurisdictionLocations: readonly JurisdictionLocation[] = [
     longitude: 124.1667,
     location: "Nuro, Upi Municipality, Maguindanao del Norte",
     category: "hospital",
+    contacts: [
+      {
+        role: "Medical Center Chief",
+        name: "Dr. Edwin John C. Limjuco",
+      },
+      { role: "Accountant", name: "Kamille Bacas, CPA" },
+    ],
   },
   {
     id: "dosdh",
@@ -37,6 +54,13 @@ export const jurisdictionLocations: readonly JurisdictionLocation[] = [
     longitude: 124.3,
     location: "Datu Odin Municipality, Maguindanao del Norte",
     category: "hospital",
+    contacts: [
+      {
+        role: "Chief of Hospital",
+        name: "Dra. Raj Deevah Eileen A. Samama-Sinsuat",
+      },
+      { role: "Bookkeeper", name: "Noreen Tanghal" },
+    ],
   },
   {
     id: "sumh",
@@ -46,6 +70,10 @@ export const jurisdictionLocations: readonly JurisdictionLocation[] = [
     longitude: 124.1333,
     location: "South Upi Municipality, Maguindanao del Sur",
     category: "hospital",
+    contacts: [
+      { role: "Chief of Hospital", name: "Dra. Lourem D. Siocon" },
+      { role: "Bookkeeper", name: "Lyn Eresee" },
+    ],
   },
   {
     id: "ipho-maguindanao",
@@ -55,6 +83,13 @@ export const jurisdictionLocations: readonly JurisdictionLocation[] = [
     longitude: 124.2472,
     location: "Cotabato City",
     category: "office",
+    contacts: [
+      {
+        role: "Medical Center Chief",
+        name: "Dr. Mohammad Ariff A. Baguindali",
+      },
+      { role: "Accountant", name: "Atty. Abuhalil Alibasa, CPA" },
+    ],
   },
   {
     id: "brhmc",
@@ -64,6 +99,13 @@ export const jurisdictionLocations: readonly JurisdictionLocation[] = [
     longitude: 124.25,
     location: "Datu Hoffer Municipality, Maguindanao del Sur",
     category: "hospital",
+    contacts: [
+      {
+        role: "Medical Center Chief",
+        name: "Dr. Mohammad Ariff A. Baguindali",
+      },
+      { role: "Accountant", name: "Atty. Abuhalil Alibasa, CPA" },
+    ],
   },
 ] as const;
 

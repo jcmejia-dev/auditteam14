@@ -18,6 +18,12 @@
 
 When classification is uncertain, treat information as confidential until an authorized owner approves otherwise.
 
+Public personnel names and roles may be displayed only after the website owner
+or another authorized content owner confirms them for public release. The
+institutional-information and jurisdiction-contact editors render plain text,
+apply bounded server validation, use existing publication RLS, and never accept
+HTML, role authority, actor IDs, or database ownership fields from the browser.
+
 ## Application controls
 
 - Use least privilege and deny-by-default authorization.

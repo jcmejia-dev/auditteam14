@@ -23,7 +23,6 @@ export type AnnouncementRecord = {
 
 export type AnnouncementFormValues = {
   title: string;
-  slug: string;
   summary: string;
   body: string;
   isFeatured: boolean;

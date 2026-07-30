@@ -38,7 +38,6 @@ export type MediaItemRecord = {
 
 export type AlbumFormValues = {
   title: string;
-  slug: string;
   description: string;
   displayOrder: number;
 };

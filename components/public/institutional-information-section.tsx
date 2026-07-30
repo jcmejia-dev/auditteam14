@@ -1,8 +1,11 @@
 import { siteContent } from "@/data/site-content";
+import { getPublicInstitutionalInformation } from "@/lib/institutional/data";
 
 import { SectionHeading } from "./section-heading";
 
-export function InstitutionalInformationSection() {
+export async function InstitutionalInformationSection() {
+  const information = await getPublicInstitutionalInformation();
+
   return (
     <section
       id="institutional-information"
@@ -16,71 +19,89 @@ export function InstitutionalInformationSection() {
           eyebrow={siteContent.institutional.eyebrow}
           title={siteContent.institutional.title}
           description={siteContent.institutional.introduction}
+          align="center"
         />
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-2">
-          <article className="institutional-card institutional-card-primary">
-            <div className="flex items-start justify-between gap-5">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold-200">
-                  Organizational details
-                </p>
-                <h3 className="mt-3 font-display text-3xl font-bold text-white">
-                  Commission and team
-                </h3>
-              </div>
+        <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-3">
+          <article className="institutional-card institutional-card-secondary">
+            <div className="border-b border-navy-900/10 pb-5">
+              <h3 className="font-display text-2xl font-bold text-navy-900">
+                Organizational Details
+              </h3>
               <span
                 aria-hidden="true"
-                className="font-display text-5xl font-bold text-white/10"
-              >
-                01
-              </span>
+                className="mt-4 block h-0.5 w-12 bg-patriot-red"
+              />
             </div>
-            <dl className="mt-8 divide-y divide-white/10">
-              {siteContent.institutional.organization.map((item) => (
+            <dl className="mt-4 divide-y divide-navy-900/10">
+              {information.organization.map((item) => (
                 <div
                   key={item.label}
-                  className="grid gap-1 py-4 sm:grid-cols-[9rem_1fr] sm:gap-6"
+                  className="grid gap-1 py-3.5 sm:grid-cols-[7.5rem_1fr] sm:gap-4 lg:grid-cols-1 xl:grid-cols-[7.5rem_1fr]"
                 >
-                  <dt className="text-sm font-bold text-gold-200">
+                  <dt className="text-sm font-bold text-navy-900">
                     {item.label}
                   </dt>
-                  <dd className="leading-7 text-white">{item.value}</dd>
+                  <dd className="text-sm leading-6 text-teal-700">
+                    {item.value}
+                  </dd>
                 </div>
               ))}
             </dl>
           </article>
 
           <article className="institutional-card institutional-card-secondary">
-            <div className="flex items-start justify-between gap-5">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-700">
-                  Regional coverage
-                </p>
-                <h3 className="mt-3 font-display text-3xl font-bold text-navy-900">
-                  Public service in BARMM
-                </h3>
-              </div>
+            <div className="border-b border-navy-900/10 pb-5">
+              <h3 className="font-display text-2xl font-bold text-navy-900">
+                Regional Coverage
+              </h3>
               <span
                 aria-hidden="true"
-                className="font-display text-5xl font-bold text-navy-900/10"
-              >
-                02
-              </span>
+                className="mt-4 block h-0.5 w-12 bg-patriot-red"
+              />
             </div>
-            <dl className="mt-8 divide-y divide-navy-900/10">
-              {siteContent.institutional.coverage.map((item) => (
+            <dl className="mt-4 divide-y divide-navy-900/10">
+              {information.coverage.map((item) => (
                 <div
                   key={item.label}
-                  className="grid gap-1 py-4 sm:grid-cols-[9rem_1fr] sm:gap-6"
+                  className="grid gap-1 py-3.5 sm:grid-cols-[7.5rem_1fr] sm:gap-4 lg:grid-cols-1 xl:grid-cols-[7.5rem_1fr]"
                 >
-                  <dt className="text-sm font-bold text-teal-700">
+                  <dt className="text-sm font-bold text-navy-900">
                     {item.label}
                   </dt>
-                  <dd className="leading-7 text-navy-900">{item.value}</dd>
+                  <dd className="text-sm leading-6 text-teal-700">
+                    {item.value}
+                  </dd>
                 </div>
               ))}
             </dl>
+          </article>
+
+          <article className="institutional-card institutional-card-secondary">
+            <div className="border-b border-navy-900/10 pb-5">
+              <h3 className="font-display text-2xl font-bold text-navy-900">
+                Core Values
+              </h3>
+              <span
+                aria-hidden="true"
+                className="mt-4 block h-0.5 w-12 bg-patriot-red"
+              />
+            </div>
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              {information.values.map((value) => (
+                <li
+                  key={value.title}
+                  className="border-l-2 border-teal-700 bg-navy-900/[0.035] px-4 py-4"
+                >
+                  <h4 className="text-sm font-bold text-navy-900">
+                    {value.title}
+                  </h4>
+                  <p className="mt-2 text-sm leading-6 text-ink">
+                    {value.description}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </article>
         </div>
       </div>

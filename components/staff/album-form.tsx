@@ -11,7 +11,6 @@ import type {
 
 const emptyValues: AlbumFormValues = {
   title: "",
-  slug: "",
   description: "",
   displayOrder: 0,
 };
@@ -94,45 +93,6 @@ export function AlbumForm({
               className="mt-2 text-sm leading-6 text-slate-600"
             >
               Use a short public title that describes the occasion.
-            </p>
-          ) : null}
-        </div>
-
-        <div>
-          <label htmlFor="album-slug" className="font-bold text-navy-900">
-            Web address name <span className="text-patriot-red">*</span>
-          </label>
-          <div className="mt-2 flex min-h-12 items-stretch">
-            <span className="flex items-center rounded-l-sm border border-r-0 border-navy-900/20 bg-cream-dark px-3 text-sm text-slate-600">
-              /photos/
-            </span>
-            <input
-              id="album-slug"
-              name="slug"
-              type="text"
-              required
-              maxLength={160}
-              pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-              defaultValue={initialValues.slug}
-              aria-invalid={Boolean(state.albumFieldErrors?.slug)}
-              aria-describedby={
-                state.albumFieldErrors?.slug
-                  ? "album-slug-error"
-                  : "album-slug-help"
-              }
-              className="min-w-0 flex-1 rounded-r-sm border border-navy-900/20 bg-white px-4 py-3 text-base text-navy-900 shadow-sm focus:border-teal-700"
-            />
-          </div>
-          <FieldError
-            id="album-slug-error"
-            message={state.albumFieldErrors?.slug}
-          />
-          {!state.albumFieldErrors?.slug ? (
-            <p
-              id="album-slug-help"
-              className="mt-2 text-sm leading-6 text-slate-600"
-            >
-              Lowercase letters, numbers, and single hyphens only.
             </p>
           ) : null}
         </div>

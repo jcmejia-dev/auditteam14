@@ -34,7 +34,6 @@ export type PublicActivityRecord = Pick<
 
 export type ActivityFormValues = {
   title: string;
-  slug: string;
   summary: string;
   body: string;
   activityDate: string;

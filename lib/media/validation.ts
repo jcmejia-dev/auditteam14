@@ -5,7 +5,6 @@ import type {
 
 export type AlbumField =
   | "title"
-  | "slug"
   | "description"
   | "displayOrder";
 export type AlbumFieldErrors = Partial<Record<AlbumField, string>>;
@@ -52,7 +51,7 @@ function parseDisplayOrder(
   return Number.isFinite(displayOrder) ? displayOrder : 0;
 }
 
-export function validateAlbumForm(formData: FormData):
+export function validateAlbumForm(formData: FormData, slug: string):
   | {
       success: true;
       values: AlbumFormValues;
@@ -69,7 +68,6 @@ export function validateAlbumForm(formData: FormData):
       values: AlbumFormValues;
     } {
   const title = textValue(formData, "title").trim();
-  const slug = textValue(formData, "slug").trim().toLowerCase();
   const description = textValue(formData, "description").trim();
   const errors: AlbumFieldErrors = {};
   const displayOrder = parseDisplayOrder(formData, errors);
@@ -78,20 +76,11 @@ export function validateAlbumForm(formData: FormData):
     errors.title = "Enter a title between 1 and 240 characters.";
   }
 
-  if (
-    slug.length < 1 ||
-    slug.length > 160 ||
-    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)
-  ) {
-    errors.slug =
-      "Use lowercase letters, numbers, and single hyphens only.";
-  }
-
   if (description.length > 2000) {
     errors.description = "Keep the description within 2,000 characters.";
   }
 
-  const values = { title, slug, description, displayOrder };
+  const values = { title, description, displayOrder };
 
   if (Object.keys(errors).length > 0) {
     return { success: false, errors, values };

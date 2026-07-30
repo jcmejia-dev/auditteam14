@@ -40,6 +40,94 @@ const LazyJurisdictionMap = dynamic(() => import("./jurisdiction-map"), {
   loading: MapLoadingState,
 });
 
+function LocationSummary({
+  location,
+  showDisclosure = false,
+}: {
+  location: JurisdictionLocation;
+  showDisclosure?: boolean;
+}) {
+  return (
+    <span className="flex w-full items-start justify-between gap-4">
+      <span className="min-w-0">
+        <span className="block font-display text-lg font-bold leading-6 text-navy-900">
+          {location.name}
+        </span>
+        <span className="mt-2 block text-sm leading-6 text-ink">
+          {location.location}
+        </span>
+      </span>
+      <span className="flex shrink-0 flex-col items-end gap-3">
+        <span className="rounded-full bg-navy-900 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-white">
+          {location.category}
+        </span>
+        {showDisclosure ? (
+          <span
+            aria-hidden="true"
+            className="jurisdiction-disclosure-chevron size-2.5 rotate-45 border-r-2 border-b-2 border-patriot-red"
+          />
+        ) : null}
+      </span>
+    </span>
+  );
+}
+
+function JurisdictionLocationCard({
+  location,
+  isSelected,
+  onSelect,
+}: {
+  location: JurisdictionLocation;
+  isSelected: boolean;
+  onSelect: (id: string | null) => void;
+}) {
+  const cardClass = [
+    "w-full rounded-sm border text-left transition-colors",
+    isSelected
+      ? "border-gold-600 bg-gold-200/35 shadow-[inset_4px_0_0_#b42318]"
+      : "border-navy-900/10 bg-cream/55 hover:border-teal-600 hover:bg-teal-100/45",
+  ].join(" ");
+
+  if (location.contacts.length === 0) {
+    return (
+      <button
+        type="button"
+        aria-pressed={isSelected}
+        onClick={() => onSelect(location.id)}
+        className={`${cardClass} p-4`}
+      >
+        <LocationSummary location={location} />
+      </button>
+    );
+  }
+
+  return (
+    <details
+      open={isSelected}
+      onToggle={(event) => {
+        const isOpen = event.currentTarget.open;
+        onSelect(isOpen ? location.id : null);
+      }}
+      className={cardClass}
+    >
+      <summary className="cursor-pointer list-none p-4 marker:hidden">
+        <LocationSummary location={location} showDisclosure />
+      </summary>
+      <div className="mx-4 mb-4 space-y-2 border-t border-navy-900/10 bg-white/80 px-4 py-4">
+        {location.contacts.map((contact) => (
+          <p
+            key={`${contact.role}-${contact.name}`}
+            className="text-sm leading-6 text-ink"
+          >
+            <strong className="text-navy-900">{contact.role}:</strong>{" "}
+            {contact.name}
+          </p>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 export function JurisdictionExplorer({
   locations,
 }: JurisdictionExplorerProps) {
@@ -63,6 +151,10 @@ export function JurisdictionExplorer({
           location.abbreviation,
           location.location,
           location.category,
+          ...location.contacts.flatMap((contact) => [
+            contact.role,
+            contact.name,
+          ]),
         ].some((value) =>
           value.toLocaleLowerCase().includes(normalizedQuery),
         );
@@ -194,38 +286,40 @@ export function JurisdictionExplorer({
               </button>
             </div>
 
-            <div className="mt-4 max-h-[31rem] space-y-3 overflow-y-auto pr-1">
-              {filteredLocations.map((location) => {
-                const isSelected = location.id === activeSelectedId;
-
-                return (
-                  <button
-                    key={location.id}
-                    type="button"
-                    aria-pressed={isSelected}
-                    onClick={() => setSelectedId(location.id)}
-                    className={[
-                      "w-full rounded-sm border p-4 text-left transition-colors",
-                      isSelected
-                        ? "border-gold-600 bg-gold-200/35 shadow-[inset_4px_0_0_#b42318]"
-                        : "border-navy-900/10 bg-cream/55 hover:border-teal-600 hover:bg-teal-100/45",
-                    ].join(" ")}
-                  >
-                    <span className="flex items-start justify-between gap-4">
-                      <span>
-                        <span className="block font-display text-lg font-bold leading-6 text-navy-900">
-                          {location.name}
-                        </span>
-                        <span className="mt-2 block text-sm leading-6 text-ink">
-                          {location.location}
-                        </span>
-                      </span>
-                      <span className="shrink-0 rounded-full bg-navy-900 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-white">
-                        {location.category}
-                      </span>
-                    </span>
-                  </button>
+            <div className="mt-4 max-h-[34rem] space-y-6 overflow-y-auto pr-1">
+              {[
+                {
+                  category: "hospital" as const,
+                  label: "District Hospitals",
+                },
+                {
+                  category: "office" as const,
+                  label: "Major Offices",
+                },
+              ].map((group) => {
+                const groupLocations = filteredLocations.filter(
+                  (location) => location.category === group.category,
                 );
+
+                return groupLocations.length > 0 ? (
+                  <section key={group.category}>
+                    <h3 className="mb-3 text-sm font-bold text-patriot-red">
+                      {group.label}
+                    </h3>
+                    <div className="space-y-3">
+                      {groupLocations.map((location) => (
+                        <JurisdictionLocationCard
+                          key={location.id}
+                          location={location}
+                          isSelected={
+                            location.id === activeSelectedId
+                          }
+                          onSelect={setSelectedId}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                ) : null;
               })}
 
               {filteredLocations.length === 0 ? (

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { getStaffAnnouncement } from "@/lib/announcements/data";
 import { isUuid } from "@/lib/announcements/types";
+import { createContentSlug } from "@/lib/content/slug";
 import {
   expirationAllowsPublishing,
   type AnnouncementFieldErrors,
@@ -45,7 +46,7 @@ function isEditorOrAdmin(role: StaffRole) {
 
 function databaseErrorMessage(code: string | undefined) {
   if (code === "23505") {
-    return "That web address name is already in use. Choose another slug.";
+    return "A matching announcement already exists. Please try again.";
   }
 
   return GENERIC_SAVE_ERROR;
@@ -70,7 +71,10 @@ export async function createAnnouncementAction(
     return { message: GENERIC_PERMISSION_ERROR };
   }
 
-  const validation = validateAnnouncementForm(formData);
+  const validation = validateAnnouncementForm(
+    formData,
+    createContentSlug(formData.get("title")),
+  );
 
   if (!validation.success) {
     return {
@@ -155,7 +159,7 @@ export async function updateAnnouncementAction(
     return { message: GENERIC_PERMISSION_ERROR };
   }
 
-  const validation = validateAnnouncementForm(formData);
+  const validation = validateAnnouncementForm(formData, existing.slug);
 
   if (!validation.success) {
     return {

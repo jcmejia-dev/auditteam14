@@ -2,7 +2,6 @@ import type { AnnouncementFormValues } from "./types";
 
 export type AnnouncementField =
   | "title"
-  | "slug"
   | "summary"
   | "body"
   | "expiresOn"
@@ -54,7 +53,7 @@ function parseExpirationDate(value: string) {
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
 }
 
-export function validateAnnouncementForm(formData: FormData):
+export function validateAnnouncementForm(formData: FormData, slug: string):
   | { success: true; data: ParsedAnnouncement }
   | {
       success: false;
@@ -62,7 +61,6 @@ export function validateAnnouncementForm(formData: FormData):
       values: AnnouncementFormValues;
     } {
   const title = textValue(formData, "title").trim();
-  const slug = textValue(formData, "slug").trim().toLowerCase();
   const summary = textValue(formData, "summary").trim();
   const body = textValue(formData, "body").trim();
   const expiresOn = textValue(formData, "expiresOn");
@@ -74,15 +72,6 @@ export function validateAnnouncementForm(formData: FormData):
 
   if (title.length < 1 || title.length > 240) {
     errors.title = "Enter a title between 1 and 240 characters.";
-  }
-
-  if (
-    slug.length < 1 ||
-    slug.length > 160 ||
-    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)
-  ) {
-    errors.slug =
-      "Use lowercase letters, numbers, and single hyphens only.";
   }
 
   if (summary.length > 600) {
@@ -107,7 +96,6 @@ export function validateAnnouncementForm(formData: FormData):
 
   const values: AnnouncementFormValues = {
     title,
-    slug,
     summary,
     body,
     isFeatured,
